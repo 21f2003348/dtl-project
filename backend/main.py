@@ -1,0 +1,49 @@
+from pathlib import Path
+
+from fastapi import FastAPI
+
+try:
+	from dotenv import load_dotenv
+except ImportError:
+	load_dotenv = None
+
+from routes.voice_query import router as voice_query_router
+from routes.student_onboarding import router as student_router
+from services.data_loader import StaticDataStore
+from services.conversation_state import ConversationStateManager
+
+
+app = FastAPI(title="Voice Travel Assistant", version="0.1.0")
+
+
+@app.on_event("startup")
+async def load_static_data() -> None:
+	import os
+	
+	if load_dotenv:
+		# Load from project root or backend dir
+		env_path = Path(__file__).parent.parent / ".env"
+		if not env_path.exists():
+			env_path = Path(__file__).parent / ".env"
+		print(f"[STARTUP] Loading .env from: {env_path} (exists: {env_path.exists()})")
+		load_dotenv(dotenv_path=env_path, override=True)
+		token = os.getenv("TOKEN")
+		print(f"[STARTUP] TOKEN loaded: {'Yes' if token else 'No'} (length: {len(token) if token else 0})")
+	else:
+		print("[STARTUP] python-dotenv not installed, cannot load .env")
+	
+	base_path = Path(__file__).parent
+	store = StaticDataStore(base_path)
+	store.load_all()
+	app.state.data_store = store
+	app.state.state_mgr = ConversationStateManager()
+	print("[STARTUP] Static data and state manager initialized")
+
+
+@app.get("/health")
+async def health() -> dict:
+	return {"status": "ok"}
+
+
+app.include_router(voice_query_router)
+app.include_router(student_router)

@@ -1,0 +1,337 @@
+{
+  "updated": "2026-01-06",
+  "cities": {
+    "Bengaluru": {
+      "metro": {
+        "lines": [
+          {
+            "name": "Purple Line",
+            "route": "Challaghatta - Whitefield",
+            "stations": [
+              "Challaghatta",
+              "Mysore Road",
+              "Deepanjali Nagar",
+              "Attiguppe",
+              "Vijayanagar",
+              "Hosahalli",
+              "Magadi Road",
+              "Majestic",
+              "KSR City Railway Station",
+              "Kempegowda",
+              "Chickpet",
+              "KR Market",
+              "National College",
+              "Lalbagh",
+              "South End Circle",
+              "Jayanagar",
+              "Rashtreeya Vidyalaya Road",
+              "Banashankari",
+              "JP Nagar",
+              "Yelachenahalli",
+              "Konanakunte Cross",
+              "Doddakallasandra",
+              "Vajarahalli",
+              "Thalaghattapura",
+              "Silk Institute",
+              "BTM Layout",
+              "Central Silk Board",
+              "Trinity",
+              "Halasuru",
+              "Indiranagar",
+              "Swami Vivekananda Road",
+              "Baiyappanahalli",
+              "Benniganahalli",
+              "Nallurhalli",
+              "Kundalahalli",
+              "Kadugodi",
+              "Channasandra",
+              "Pattandur Agrahara",
+              "Whitefield"
+            ],
+            "frequency": "5-10 mins"
+          },
+          {
+            "name": "Green Line",
+            "route": "Nagasandra - Silk Institute (via Majestic)",
+            "stations": [
+              "Nagasandra",
+              "Dasarahalli",
+              "Jalahalli",
+              "Peenya Industry",
+              "Peenya",
+              "Goraguntepalya",
+              "Yeshwanthpur",
+              "Sandal Soap Factory",
+              "Mahalakshmi",
+              "Rajajinagar",
+              "Kuvempu Road",
+              "Srirampura",
+              "Sampige Road",
+              "Majestic",
+              "Chickpet",
+              "KR Market",
+              "National College",
+              "Lalbagh",
+              "South End Circle",
+              "Jayanagar",
+              "Rashtreeya Vidyalaya Road",
+              "Banashankari",
+              "JP Nagar",
+              "Yelachenahalli"
+            ],
+            "frequency": "5-10 mins"
+          },
+          {
+            "name": "Yellow Line",
+            "route": "RV Road - Bommasandra",
+            "stations": [
+              "RV Road",
+              "Jayanagar East",
+              "South End Circle",
+              "Lalbagh",
+              "National College",
+              "KR Market",
+              "Chickpet",
+              "Majestic",
+              "Magadi Road",
+              "Hosahalli",
+              "Vijayanagar",
+              "Attiguppe",
+              "Deepanjali Nagar",
+              "Mysore Road",
+              "Kengeri",
+              "Kengeri Bus Terminal",
+              "Challaghatta",
+              "Electronic City",
+              "Hebbagodi",
+              "Bommasandra"
+            ],
+            "frequency": "8-12 mins"
+          }
+        ],
+        "interchange": [
+          "Majestic",
+          "KR Market",
+          "Chickpet",
+          "South End Circle",
+          "Lalbagh",
+          "Jayanagar"
+        ]
+      },
+      "bus": {
+        "operator": "BMTC",
+        "major_routes": [
+          {
+            "number": "215",
+            "route": "Majestic - Electronic City",
+            "frequency": "15 mins"
+          },
+          {
+            "number": "500K",
+            "route": "Kengeri - Marathahalli",
+            "frequency": "20 mins"
+          },
+          {
+            "number": "G4",
+            "route": "Shivajinagar - Electronic City",
+            "frequency": "30 mins"
+          },
+          {
+            "number": "356E",
+            "route": "Majestic - Whitefield",
+            "frequency": "20 mins"
+          },
+          {
+            "number": "365",
+            "route": "Kempegowda Bus Station - Hebbal",
+            "frequency": "15 mins"
+          },
+          {
+            "number": "171K",
+            "route": "Vijayanagar - Koramangala",
+            "frequency": "20 mins"
+          },
+          {
+            "number": "400D",
+            "route": "Banashankari - Indiranagar",
+            "frequency": "25 mins"
+          },
+          {
+            "number": "335E",
+            "route": "Majestic - Sarjapur Road",
+            "frequency": "30 mins"
+          },
+          {
+            "number": "201",
+            "route": "Kengeri - KR Puram",
+            "frequency": "25 mins"
+          },
+          {
+            "number": "401",
+            "route": "Electronic City - Hebbal",
+            "frequency": "40 mins"
+          },
+          {
+            "number": "335P",
+            "route": "Majestic - HSR Layout",
+            "frequency": "20 mins"
+          },
+          {
+            "number": "500B",
+            "route": "Yeshwanthpur - Bommasandra",
+            "frequency": "35 mins"
+          },
+          {
+            "number": "600A",
+            "route": "Kengeri - Whitefield",
+            "frequency": "30 mins"
+          },
+          {
+            "number": "171E",
+            "route": "Banashankari - MG Road",
+            "frequency": "15 mins"
+          },
+          {
+            "number": "G9",
+            "route": "Shivajinagar - Sarjapur",
+            "frequency": "25 mins"
+          }
+        ]
+      },
+      "major_hubs": [
+        "Majestic",
+        "KR Puram",
+        "Silk Board",
+        "Hebbal",
+        "Electronic City"
+      ],
+      "coverage_areas": {
+        "well_connected": [
+          "Majestic",
+          "Jayanagar",
+          "Indiranagar",
+          "Koramangala",
+          "Whitefield",
+          "Banashankari",
+          "Yeshwanthpur",
+          "JP Nagar",
+          "BTM Layout"
+        ],
+        "moderate": [
+          "Electronic City",
+          "Marathahalli",
+          "HSR Layout",
+          "Sarjapur",
+          "Yelahanka",
+          "Hebbal",
+          "RT Nagar"
+        ],
+        "poor": [
+          "Outer Ring Road beyond Silk Board",
+          "Sarjapur Outer",
+          "Hennur",
+          "Tumkur Road outer areas"
+        ]
+      }
+    },
+    "Mumbai": {
+      "suburban_rail": {
+        "lines": [
+          {
+            "name": "Western Line",
+            "route": "Churchgate - Dahanu",
+            "major_stations": [
+              "Churchgate",
+              "Marine Lines",
+              "Charni Road",
+              "Grant Road",
+              "Mumbai Central",
+              "Mahalaxmi",
+              "Lower Parel",
+              "Prabhadevi",
+              "Dadar",
+              "Matunga",
+              "Mahim",
+              "Bandra",
+              "Khar",
+              "Santacruz",
+              "Vile Parle",
+              "Andheri",
+              "Jogeshwari",
+              "Goregaon",
+              "Malad",
+              "Kandivali",
+              "Borivali"
+            ]
+          },
+          {
+            "name": "Central Line",
+            "route": "CST - Kalyan",
+            "major_stations": [
+              "CST",
+              "Masjid",
+              "Sandhurst Road",
+              "Byculla",
+              "Chinchpokli",
+              "Currey Road",
+              "Parel",
+              "Dadar",
+              "Matunga",
+              "Sion",
+              "Kurla",
+              "Vidyavihar",
+              "Ghatkopar",
+              "Vikhroli",
+              "Kanjurmarg",
+              "Bhandup",
+              "Nahur",
+              "Mulund",
+              "Thane"
+            ]
+          },
+          {
+            "name": "Harbour Line",
+            "route": "CST - Panvel",
+            "major_stations": [
+              "CST",
+              "Dockyard Road",
+              "Reay Road",
+              "Wadala",
+              "GTB Nagar",
+              "Chunabhatti",
+              "Kurla",
+              "Tilak Nagar",
+              "Chembur",
+              "Govandi",
+              "Mankhurd",
+              "Vashi",
+              "Sanpada",
+              "Juinagar",
+              "Nerul",
+              "Seawoods",
+              "Belapur",
+              "Kharghar",
+              "Mansarovar",
+              "Khandeshwar",
+              "Panvel"
+            ]
+          }
+        ],
+        "interchange": ["Dadar", "Kurla"]
+      },
+      "metro": {
+        "lines": [
+          {
+            "name": "Line 1",
+            "route": "Versova - Ghatkopar",
+            "stations": ["Versova", "Andheri", "Ghatkopar"]
+          }
+        ]
+      },
+      "bus": {
+        "operator": "BEST",
+        "note": "Extensive coverage but less predictable timing"
+      }
+    }
+  }
+}

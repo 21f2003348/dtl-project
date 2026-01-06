@@ -1,0 +1,26 @@
+{
+  "updated": "2026-01-01",
+  "cities": [
+    {
+      "city": "Bengaluru",
+      "modes": ["Bus", "Metro", "Auto"],
+      "bus_operator": "BMTC",
+      "metro_operator": "Namma Metro",
+      "accessibility": { "metro": true, "bus": "moderate" },
+      "notes": ["Monthly timetable curated", "First/last metro 05:30-23:00"],
+      "safety": { "late_night": "prefer metro" }
+    },
+    {
+      "city": "Mumbai",
+      "modes": ["Suburban Rail", "Metro", "Bus", "Auto"],
+      "bus_operator": "BEST",
+      "metro_operator": "MMRDA",
+      "accessibility": { "metro": true, "bus": "moderate" },
+      "notes": [
+        "Harbour/Western/Central lines mapped",
+        "Ferries excluded for v1"
+      ],
+      "safety": { "late_night": "prefer metro/rail" }
+    }
+  ]
+}

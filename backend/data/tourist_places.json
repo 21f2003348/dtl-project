@@ -1,0 +1,32 @@
+{
+  "updated": "2026-01-01",
+  "cities": {
+    "Hampi": {
+      "safe_places": [
+        { "name": "Virupaksha Temple", "type": "heritage", "open": true },
+        { "name": "Vijaya Vittala Temple", "type": "heritage", "open": true },
+        { "name": "Hemakuta Hill", "type": "sunset", "open": true }
+      ],
+      "closed_or_risky": ["Unlisted guides", "Unmarked trails after sunset"],
+      "themes": ["history", "architecture", "sunsets"]
+    },
+    "Bengaluru": {
+      "safe_places": [
+        { "name": "Lalbagh", "type": "garden", "open": true },
+        { "name": "Cubbon Park", "type": "park", "open": true },
+        { "name": "Visvesvaraya Museum", "type": "science", "open": true }
+      ],
+      "closed_or_risky": ["Unverified night treks", "Abandoned warehouses"],
+      "themes": ["gardens", "science", "food"]
+    },
+    "Mumbai": {
+      "safe_places": [
+        { "name": "Gateway of India", "type": "landmark", "open": true },
+        { "name": "Marine Drive", "type": "seafront", "open": true },
+        { "name": "Elephanta Caves", "type": "heritage", "open": true }
+      ],
+      "closed_or_risky": ["Unlicensed boat rides in monsoon"],
+      "themes": ["sea", "heritage", "food"]
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "updated": "2026-01-01",
+  "cities": {
+    "Bengaluru": {
+      "bus_flat": 25,
+      "metro_per_km": 4.0,
+      "auto_base": 35,
+      "auto_per_km": 18,
+      "notes": "Daytime fares, surge not included"
+    },
+    "Mumbai": {
+      "bus_flat": 20,
+      "metro_per_km": 3.5,
+      "auto_base": 30,
+      "auto_per_km": 16,
+      "notes": "Western/Central rail not priced here"
+    }
+  }
+}
