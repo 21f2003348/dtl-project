@@ -12,6 +12,8 @@ from services.student_optimizer import compute_options
 from services.question_logic import next_question
 from services.conversation_state import ConversationStateManager
 from services.distance_provider import get_distance_time_km_min
+from services.group_optimizer import GroupOptimizer
+from services.traffic_provider import TrafficProvider
 
 router = APIRouter()
 
@@ -26,6 +28,14 @@ class VoiceQueryRequest(BaseModel):
     session_id: Optional[str] = Field(None, description="Session identifier")
     distance_km: Optional[float] = Field(5.0, description="Approx distance for fare/time calc")
     days: Optional[int] = Field(1, description="Number of days for tourist itinerary")
+    
+    # Group composition fields
+    group_type: Literal["solo", "elderly_couple", "student_group", "family", "mixed"] = "solo"
+    group_size: int = Field(1, ge=1, le=20, description="Number of people in group")
+    elderly_count: int = Field(0, ge=0, description="Number of elderly in group")
+    student_count: int = Field(0, ge=0, description="Number of students in group")
+    children_count: int = Field(0, ge=0, description="Number of children in group")
+    accessibility_need: bool = Field(False, description="Wheelchair or mobility assistance needed")
 
 
 def get_data_store(request: Request) -> StaticDataStore:
@@ -49,8 +59,47 @@ async def handle_voice_query(payload: VoiceQueryRequest, data_store: StaticDataS
     destination = payload.destination or intent["destination"]
     live_distance_km, live_duration_min = get_distance_time_km_min(origin, destination)
 
-    if payload.user_type == "elderly":
+    # Initialize group optimizer and traffic provider
+    group_optimizer = GroupOptimizer(data_store.get("transit_lines") or {}, data_store.get("fares") or {}, city)
+    traffic_provider = TrafficProvider()
+
+    # Check if group travel
+    is_group = payload.group_size > 1 or payload.group_type != "solo"
+    
+    if is_group:
+        # Use group optimizer for multi-person travel
+        group_result = group_optimizer.compute_group_options(
+            origin=origin,
+            destination=destination,
+            group_type=payload.group_type,
+            group_size=payload.group_size,
+            elderly_count=payload.elderly_count,
+            student_count=payload.student_count,
+            children_count=payload.children_count,
+            distance_km=live_distance_km,
+            duration_min=live_duration_min,
+            accessibility_need=payload.accessibility_need
+        )
+        
+        # Get traffic adjustment
+        traffic_info = traffic_provider._estimate_by_time_of_day(live_distance_km, live_duration_min)
+        
+        decision = {
+            "mode": "group",
+            "decision": "Group-optimized routes",
+            "group_summary": group_result["group_summary"],
+            "route_options": group_result["route_options"],
+            "recommendation": group_result["recommendation"],
+            "group_metrics": group_result["group_metrics"],
+            "traffic_info": traffic_info,
+            "explanation": "Routes optimized for group composition, cost-sharing, and comfort"
+        }
+    elif payload.user_type == "elderly":
         decision = plan_safe_route(origin, destination, city, data_store.get("transit_metadata") or {}, distance_km=live_distance_km, duration_min=live_duration_min, transit_lines=data_store.get("transit_lines"))
+        
+        # Add traffic info
+        traffic_info = traffic_provider._estimate_by_time_of_day(live_distance_km, live_duration_min)
+        decision["traffic_info"] = traffic_info
     elif payload.user_type == "tourist":
         itinerary = draft_itinerary(city, data_store.get("tourist_places") or {}, days=payload.days or 1)
         if not validate_itinerary(itinerary, data_store.get("tourist_places") or {}):
@@ -73,6 +122,10 @@ async def handle_voice_query(payload: VoiceQueryRequest, data_store: StaticDataS
             "time": options["fastest"]["time"],
             "explanation": "Cheapest uses bus flat fare; fastest uses metro"
         }
+        
+        # Add traffic info
+        traffic_info = traffic_provider._estimate_by_time_of_day(live_distance_km, live_duration_min)
+        decision["traffic_info"] = traffic_info
 
     question = next_question(payload.user_type, city, intent, session_state)
     decision.update({

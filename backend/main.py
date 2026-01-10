@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 try:
 	from dotenv import load_dotenv
@@ -9,11 +10,30 @@ except ImportError:
 
 from routes.voice_query import router as voice_query_router
 from routes.student_onboarding import router as student_router
+from routes.usual_routes import router as usual_routes_router
+from routes.tourist_routes import router as tourist_router
+from routes.transit_routes import router as transit_router
 from services.data_loader import StaticDataStore
 from services.conversation_state import ConversationStateManager
 
 
 app = FastAPI(title="Voice Travel Assistant", version="0.1.0")
+
+# Allow local frontend (e.g., live server on :5500) to call the API
+app.add_middleware(
+	CORSMiddleware,
+	allow_origins=[
+		"http://127.0.0.1:5500",
+		"http://localhost:5500",
+		"http://127.0.0.1:3000",
+		"http://localhost:3000",
+		"http://127.0.0.1",
+		"http://localhost",
+	],
+	allow_credentials=True,
+	allow_methods=["*"],
+	allow_headers=["*"],
+)
 
 
 @app.on_event("startup")
@@ -47,3 +67,6 @@ async def health() -> dict:
 
 app.include_router(voice_query_router)
 app.include_router(student_router)
+app.include_router(usual_routes_router)
+app.include_router(tourist_router)
+app.include_router(transit_router)

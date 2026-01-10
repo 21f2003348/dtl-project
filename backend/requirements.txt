@@ -3,3 +3,6 @@ uvicorn[standard]
 requests
 python-dotenv
 pydantic
+networkxpytest
+pytest-cov
+httpx
