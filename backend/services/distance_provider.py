@@ -14,9 +14,13 @@ def _get_token() -> Optional[str]:
     return token
 
 
-def _geocode(query: str, token: str) -> Optional[Tuple[float, float]]:
-    url = f"https://api.mapbox.com/geocoding/v5/mapbox.places/{query}.json"
-    params = {"access_token": token, "limit": 1}
+def _geocode(query: str, token: str, city: str = "Bengaluru") -> Optional[Tuple[float, float]]:
+    """Geocode a location name to coordinates."""
+    # Add city and country context for better geocoding accuracy
+    full_query = f"{query}, {city}, India"
+    
+    url = f"https://api.mapbox.com/geocoding/v5/mapbox.places/{full_query}.json"
+    params = {"access_token": token, "limit": 1, "country": "IN"}
     try:
         resp = requests.get(url, params=params, timeout=5)
         if resp.status_code != 200:
@@ -37,15 +41,15 @@ def _geocode(query: str, token: str) -> Optional[Tuple[float, float]]:
         return None
 
 
-def get_distance_time_km_min(origin: str, destination: str) -> Tuple[float, float]:
+def get_distance_time_km_min(origin: str, destination: str, city: str = "Bengaluru") -> Tuple[float, float]:
     """Fetch distance (km) and duration (minutes) via Mapbox Directions Matrix. Falls back to (5km, 10min)."""
     token = _get_token()
     if not token:
         logger.info("Using fallback distance/time (no TOKEN)")
         return 5.0, 10.0
 
-    o = _geocode(origin, token)
-    d = _geocode(destination, token)
+    o = _geocode(origin, token, city)
+    d = _geocode(destination, token, city)
     if not o or not d:
         logger.warning(f"Geocode failed for origin='{origin}' or dest='{destination}', using fallback")
         return 5.0, 10.0
@@ -68,8 +72,19 @@ def get_distance_time_km_min(origin: str, destination: str) -> Tuple[float, floa
         seconds = durations[0][1]
         km = round(meters / 1000.0, 2)
         minutes = round(seconds / 60.0, 1)
+        
+        # Sanity check: For city travel, distances should be reasonable
+        # Max ~100km and ~180 minutes for intra-city routes
+        if km > 100:
+            logger.warning(f"Distance {km}km seems too large for city travel, capping to 30km")
+            km = 30.0
+        if minutes > 180:
+            logger.warning(f"Duration {minutes}min seems too large for city travel, estimating from distance")
+            minutes = km * 3  # ~3 min/km average
+        
         logger.info(f"Mapbox: {origin} → {destination} = {km}km, {minutes}min")
         return km, minutes
     except Exception as e:
         logger.error(f"Directions matrix error: {e}")
         return 5.0, 10.0
+

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Tourist Travel Assistant - Explore the city and find amazing attractions">
+    <title>Tourist Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header__logo">
+            <span class="header__logo-icon">🧳</span>
+            <span data-i18n="tourist">Tourist Assistant</span>
+        </div>
+        <nav class="header__nav">
+            <button class="btn btn--ghost" id="languageBtn" title="Change Language">
+                🌐 <span id="currentLangLabel">EN</span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="chat-page">
+            <!-- Chat Header -->
+            <div class="chat-header">
+                <div class="chat-header__back" id="backBtn">
+                    <span>←</span>
+                    <span data-i18n="back">Back</span>
+                </div>
+                <h1 class="chat-header__title" data-i18n="tourist">Tourist</h1>
+            </div>
+
+            <!-- Chat Body -->
+            <div class="chat-body" id="chatBody">
+                <!-- Messages will be added here -->
+            </div>
+
+            <!-- Chat Input -->
+            <div class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <input type="text" class="chat-input" id="chatInput" data-i18n-placeholder="typeMessage"
+                        placeholder="Type your message...">
+                    <button class="voice-btn" id="voiceBtn" title="Voice Input">
+                        🎤
+                    </button>
+                    <button class="btn btn--primary" id="sendBtn" data-i18n="send">
+                        Send
+                    </button>
+                </div>
+                <p class="text-center text-muted mt-1" id="recordingStatus"></p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Language Modal -->
+    <div class="modal-overlay" id="languageModal">
+        <div class="modal">
+            <h2 class="modal__title" data-i18n="selectLanguage">Select Language</h2>
+            <div class="language-options">
+                <div class="language-option" data-lang="en">
+                    <span class="language-option__flag">🇬🇧</span>
+                    <span class="language-option__name">English</span>
+                    <span class="language-option__native">English</span>
+                </div>
+                <div class="language-option" data-lang="hi">
+                    <span class="language-option__flag">🇮🇳</span>
+                    <span class="language-option__name">Hindi</span>
+                    <span class="language-option__native">हिंदी</span>
+                </div>
+                <div class="language-option" data-lang="kn">
+                    <span class="language-option__flag">🇮🇳</span>
+                    <span class="language-option__name">Kannada</span>
+                    <span class="language-option__native">ಕನ್ನಡ</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+    <script src="chat.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize chat for tourist
+            window.ChatAssistant.initChat('tourist');
+        });
+    </script>
+</body>
+
+</html>

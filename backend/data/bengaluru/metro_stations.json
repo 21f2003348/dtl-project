@@ -1,0 +1,342 @@
+{
+    "city": "Bengaluru",
+    "metro_system": "Namma Metro",
+    "lines": {
+        "Purple": {
+            "name": "Purple Line",
+            "color": "#800080",
+            "stations": [
+                {
+                    "name": "Challaghatta",
+                    "lat": 12.9914,
+                    "lon": 77.5393
+                },
+                {
+                    "name": "Pattanagere",
+                    "lat": 12.9867,
+                    "lon": 77.5456
+                },
+                {
+                    "name": "Mysore Road",
+                    "lat": 12.9770,
+                    "lon": 77.5531
+                },
+                {
+                    "name": "Deepanjali Nagar",
+                    "lat": 12.9754,
+                    "lon": 77.5614
+                },
+                {
+                    "name": "Attiguppe",
+                    "lat": 12.9733,
+                    "lon": 77.5691
+                },
+                {
+                    "name": "Vijayanagar",
+                    "lat": 12.9711,
+                    "lon": 77.5756
+                },
+                {
+                    "name": "Hosahalli",
+                    "lat": 12.9688,
+                    "lon": 77.5844
+                },
+                {
+                    "name": "Magadi Road",
+                    "lat": 12.9688,
+                    "lon": 77.5922
+                },
+                {
+                    "name": "City Railway Station",
+                    "lat": 12.9775,
+                    "lon": 77.5706
+                },
+                {
+                    "name": "Majestic",
+                    "lat": 12.9764,
+                    "lon": 77.5707,
+                    "interchange": [
+                        "Green"
+                    ]
+                },
+                {
+                    "name": "Sir M Visveswaraya Station",
+                    "lat": 12.9774,
+                    "lon": 77.5803
+                },
+                {
+                    "name": "Cubbon Park",
+                    "lat": 12.9796,
+                    "lon": 77.5912
+                },
+                {
+                    "name": "MG Road",
+                    "lat": 12.9752,
+                    "lon": 77.6068
+                },
+                {
+                    "name": "Trinity",
+                    "lat": 12.9720,
+                    "lon": 77.6166
+                },
+                {
+                    "name": "Halasuru",
+                    "lat": 12.9672,
+                    "lon": 77.6252
+                },
+                {
+                    "name": "Indiranagar",
+                    "lat": 12.9778,
+                    "lon": 77.6408
+                },
+                {
+                    "name": "Swami Vivekananda Road",
+                    "lat": 12.9854,
+                    "lon": 77.6571
+                },
+                {
+                    "name": "Baiyappanahalli",
+                    "lat": 12.9917,
+                    "lon": 77.6746
+                },
+                {
+                    "name": "KR Puram",
+                    "lat": 13.0010,
+                    "lon": 77.6970
+                },
+                {
+                    "name": "Mahadevapura",
+                    "lat": 12.9965,
+                    "lon": 77.7045
+                },
+                {
+                    "name": "Garudacharpalya",
+                    "lat": 12.9904,
+                    "lon": 77.7159
+                },
+                {
+                    "name": "Hoodi",
+                    "lat": 12.9906,
+                    "lon": 77.7294
+                },
+                {
+                    "name": "Seetharampalya",
+                    "lat": 12.9924,
+                    "lon": 77.7428
+                },
+                {
+                    "name": "Kundalahalli",
+                    "lat": 12.9648,
+                    "lon": 77.7183
+                },
+                {
+                    "name": "Whitefield",
+                    "lat": 12.9703,
+                    "lon": 77.7506
+                }
+            ]
+        },
+        "Green": {
+            "name": "Green Line",
+            "color": "#008000",
+            "stations": [
+                {
+                    "name": "Silk Institute",
+                    "lat": 12.8534,
+                    "lon": 77.5533
+                },
+                {
+                    "name": "Konanakunte Cross",
+                    "lat": 12.8720,
+                    "lon": 77.5600
+                },
+                {
+                    "name": "Doddakallasandra",
+                    "lat": 12.8870,
+                    "lon": 77.5600
+                },
+                {
+                    "name": "Vajrahalli",
+                    "lat": 12.8997,
+                    "lon": 77.5610
+                },
+                {
+                    "name": "Thalaghattapura",
+                    "lat": 12.9075,
+                    "lon": 77.5573
+                },
+                {
+                    "name": "Yelachenahalli",
+                    "lat": 12.9157,
+                    "lon": 77.5600
+                },
+                {
+                    "name": "Jaya Prakash Nagar",
+                    "lat": 12.9181,
+                    "lon": 77.5670
+                },
+                {
+                    "name": "Banashankari",
+                    "lat": 12.9224,
+                    "lon": 77.5716
+                },
+                {
+                    "name": "Rashtriya Vidyalaya Road",
+                    "lat": 12.9275,
+                    "lon": 77.5772
+                },
+                {
+                    "name": "Jayanagar",
+                    "lat": 12.9286,
+                    "lon": 77.5822
+                },
+                {
+                    "name": "South End Circle",
+                    "lat": 12.9378,
+                    "lon": 77.5763
+                },
+                {
+                    "name": "Lalbagh",
+                    "lat": 12.9494,
+                    "lon": 77.5777
+                },
+                {
+                    "name": "National College",
+                    "lat": 12.9518,
+                    "lon": 77.5761
+                },
+                {
+                    "name": "City Market",
+                    "lat": 12.9599,
+                    "lon": 77.5778
+                },
+                {
+                    "name": "Majestic",
+                    "lat": 12.9764,
+                    "lon": 77.5707,
+                    "interchange": [
+                        "Purple"
+                    ]
+                },
+                {
+                    "name": "Mantri Square Sampige Road",
+                    "lat": 12.9870,
+                    "lon": 77.5700
+                },
+                {
+                    "name": "Srirampura",
+                    "lat": 12.9955,
+                    "lon": 77.5720
+                },
+                {
+                    "name": "Sandal Soap Factory",
+                    "lat": 13.0027,
+                    "lon": 77.5722
+                },
+                {
+                    "name": "Yeshwanthpur",
+                    "lat": 13.0145,
+                    "lon": 77.5645
+                },
+                {
+                    "name": "Gorguntepalya",
+                    "lat": 13.0230,
+                    "lon": 77.5590
+                },
+                {
+                    "name": "Peenya",
+                    "lat": 13.0317,
+                    "lon": 77.5198
+                },
+                {
+                    "name": "Peenya Industry",
+                    "lat": 13.0368,
+                    "lon": 77.5110
+                },
+                {
+                    "name": "Jalahalli",
+                    "lat": 13.0390,
+                    "lon": 77.5050
+                },
+                {
+                    "name": "Dasarahalli",
+                    "lat": 13.0452,
+                    "lon": 77.5016
+                },
+                {
+                    "name": "Nagasandra",
+                    "lat": 13.0513,
+                    "lon": 77.5152
+                },
+                {
+                    "name": "Madavara",
+                    "lat": 13.0650,
+                    "lon": 77.4930
+                }
+            ]
+        },
+        "Yellow": {
+            "name": "Yellow Line (RV Road - Bommasandra)",
+            "color": "#FFFF00",
+            "stations": [
+                {
+                    "name": "RV Road",
+                    "lat": 12.9365,
+                    "lon": 77.5805
+                },
+                {
+                    "name": "Ragigudda",
+                    "lat": 12.9263,
+                    "lon": 77.5875
+                },
+                {
+                    "name": "BTM Layout",
+                    "lat": 12.9160,
+                    "lon": 77.5983
+                },
+                {
+                    "name": "Jayadeva Hospital",
+                    "lat": 12.9114,
+                    "lon": 77.5989
+                },
+                {
+                    "name": "HSR Layout",
+                    "lat": 12.9097,
+                    "lon": 77.6335
+                },
+                {
+                    "name": "Oxford College",
+                    "lat": 12.8980,
+                    "lon": 77.6460
+                },
+                {
+                    "name": "Muneshwara Nagar",
+                    "lat": 12.8895,
+                    "lon": 77.6541
+                },
+                {
+                    "name": "Hulimavu",
+                    "lat": 12.8785,
+                    "lon": 77.6482
+                },
+                {
+                    "name": "Central Silk Board",
+                    "lat": 12.8945,
+                    "lon": 77.6239
+                },
+                {
+                    "name": "Bommasandra",
+                    "lat": 12.8162,
+                    "lon": 77.6712
+                }
+            ]
+        }
+    },
+    "fares": {
+        "base_fare": 10,
+        "per_station": 2,
+        "max_fare": 60,
+        "senior_discount": 0.5,
+        "student_discount": 0.25
+    }
+}

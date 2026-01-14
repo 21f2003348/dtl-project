@@ -143,8 +143,33 @@
           },
           {
             "number": "365",
-            "route": "Kempegowda Bus Station - Hebbal",
+            "route": "Kempegowda Bus Station - Bannerghatta National Park",
+            "frequency": "20 mins"
+          },
+          {
+            "number": "415B",
+            "route": "Majestic - Hebbal - Yelahanka",
+            "frequency": "20 mins"
+          },
+          {
+            "number": "V-298MN",
+            "route": "Majestic - Hebbal - Manyata Tech Park",
             "frequency": "15 mins"
+          },
+          {
+            "number": "285-M",
+            "route": "Majestic - Hebbal - Kogilu",
+            "frequency": "15 mins"
+          },
+          {
+            "number": "KIA-9",
+            "route": "Majestic - Hebbal - Kempegowda International Airport",
+            "frequency": "20 mins"
+          },
+          {
+            "number": "287-G",
+            "route": "Majestic - Hebbal - Jakkur",
+            "frequency": "20 mins"
           },
           {
             "number": "171K",
@@ -195,6 +220,31 @@
             "number": "G9",
             "route": "Shivajinagar - Sarjapur",
             "frequency": "25 mins"
+          },
+          {
+            "number": "210H",
+            "route": "RVCE - Banashankari - Jayanagar",
+            "frequency": "20 mins"
+          },
+          {
+            "number": "210R",
+            "route": "Banashankari - RVCE - Kengeri",
+            "frequency": "25 mins"
+          },
+          {
+            "number": "500C",
+            "route": "RVCE - Majestic - Yeshwanthpur",
+            "frequency": "30 mins"
+          },
+          {
+            "number": "177",
+            "route": "RVCE - JP Nagar - BTM Layout",
+            "frequency": "20 mins"
+          },
+          {
+            "number": "RV-1",
+            "route": "RVCE Campus - Banashankari TTMC",
+            "frequency": "15 mins"
           }
         ]
       },
@@ -317,14 +367,21 @@
             ]
           }
         ],
-        "interchange": ["Dadar", "Kurla"]
+        "interchange": [
+          "Dadar",
+          "Kurla"
+        ]
       },
       "metro": {
         "lines": [
           {
             "name": "Line 1",
             "route": "Versova - Ghatkopar",
-            "stations": ["Versova", "Andheri", "Ghatkopar"]
+            "stations": [
+              "Versova",
+              "Andheri",
+              "Ghatkopar"
+            ]
           }
         ]
       },

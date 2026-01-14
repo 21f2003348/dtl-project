@@ -1,0 +1,14 @@
+# Environment Variables (CRITICAL for MongoDB Atlas)
+# Never commit these!
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.development.local
+.env.test.local
+.env.production.local
+
+
+#my files
+accounts.txt

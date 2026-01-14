@@ -24,6 +24,31 @@ def find_transit_line(origin: str, destination: str, city: str, transit_lines: D
         query_lower = query.lower()
         return any(query_lower in station.lower() or station.lower() in query_lower for station in stations)
     
+    def route_contains(route_text: str, location: str) -> bool:
+        """Check if a route text contains a location (flexible matching)"""
+        route_lower = route_text.lower()
+        loc_lower = location.lower()
+        # Direct match
+        if loc_lower in route_lower:
+            return True
+        # Handle abbreviations and synonyms
+        abbreviations = {
+            "rvce": ["rv college", "rv", "rashtreeya vidyalaya"],
+            "bsk": ["banashankari"],
+            "jp nagar": ["jpn", "jp"],
+            "btm": ["btm layout"],
+            "mg road": ["mg", "mahatma gandhi road"],
+            "majestic": ["kempegowda", "kbs", "kempegowda bus station"],
+            "kempegowda bus station": ["majestic", "kbs"],
+            "hebbal": ["mekhri circle", "esteem mall"]
+        }
+        for abbr, expansions in abbreviations.items():
+            if loc_lower == abbr and any(exp in route_lower for exp in expansions):
+                return True
+            if any(exp == loc_lower for exp in expansions) and abbr in route_lower:
+                return True
+        return False
+    
     # Check suburban rail first (Mumbai) - highest priority for long distances
     if "suburban_rail" in city_data:
         for line in city_data["suburban_rail"]["lines"]:
@@ -39,14 +64,15 @@ def find_transit_line(origin: str, destination: str, city: str, transit_lines: D
                 frequency = line.get("frequency", "10-15 mins")
                 return {"type": "metro", "line": line["name"], "route": line["route"], "frequency": frequency}
     
-    # Check bus routes - fallback for most routes
+    # Check bus routes with improved matching
     if "bus" in city_data and "major_routes" in city_data["bus"]:
         for route in city_data["bus"]["major_routes"]:
-            route_text = route["route"].lower()
-            if origin.lower() in route_text and destination.lower() in route_text:
+            route_text = route["route"]
+            # Only return routes that cover BOTH origin and destination
+            if route_contains(route_text, origin) and route_contains(route_text, destination):
                 return {"type": "bus", "line": f"Bus {route['number']}", "route": route["route"], "frequency": route.get("frequency", "20-30 mins")}
     
-    # No direct line found - suggest multi-modal or return None
+    # No direct line found - don't return partial matches
     return None
 
 
