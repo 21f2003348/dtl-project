@@ -14,8 +14,8 @@
 │                         │                                    │
 │                         ▼                                    │
 │              ┌─────────────────────┐                         │
-│              │   Web Speech API    │                         │
-│              │  (Voice Recognition)│                         │
+│              │     chat.js         │                         │
+│              │  (Voice + Text UI)  │                         │
 │              └──────────┬──────────┘                         │
 └─────────────────────────┼────────────────────────────────────┘
                           │ HTTP POST
@@ -25,23 +25,32 @@
 │  ┌──────────────────────────────────────────────────────┐   │
 │  │                    FastAPI App                        │   │
 │  │  ┌─────────────┐  ┌─────────────┐  ┌──────────────┐  │   │
-│  │  │/voice-query │  │  /tourist   │  │   /health    │  │   │
+│  │  │/voice-query │  │ /transcribe │  │   /health    │  │   │
 │  │  └──────┬──────┘  └──────┬──────┘  └──────────────┘  │   │
 │  └─────────┼────────────────┼───────────────────────────┘   │
 │            │                │                                │
 │            ▼                ▼                                │
 │  ┌─────────────────────────────────────────────────────┐    │
-│  │                    SERVICES                          │    │
+│  │              USER-TYPE ROUTING                       │    │
+│  │  ┌────────────────┐  ┌───────────────┐  ┌─────────┐ │    │
+│  │  │ Student        │  │ Elderly       │  │ Tourist │ │    │
+│  │  │ Optimizer      │  │ Router        │  │ Convo   │ │    │
+│  │  │ (Cheap/Fast)   │  │ (Comfort)     │  │ (AI)    │ │    │
+│  │  └────────────────┘  └───────────────┘  └─────────┘ │    │
+│  └──────────────────────────────────────────────────────┘   │
+│            │                │                │               │
+│            ▼                ▼                ▼               │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │              SHARED SERVICES                         │    │
 │  │  ┌──────────────┐  ┌──────────────┐  ┌───────────┐  │    │
-│  │  │Intent Parser │  │Hybrid Router │  │ AI Planner│  │    │
+│  │  │Intent Parser │  │Hybrid Router │  │ Mapbox    │  │    │
 │  │  └──────────────┘  └──────────────┘  └───────────┘  │    │
 │  │  ┌──────────────┐  ┌──────────────┐  ┌───────────┐  │    │
-│  │  │Transit Data  │  │   Mapbox     │  │Ride Pricing│ │    │
-│  │  │   Service    │  │  Directions  │  │           │  │    │
+│  │  │Transit Data  │  │   Gemini     │  │Ride Pricing│ │    │
+│  │  │   Service    │  │     AI       │  │           │  │    │
 │  │  └──────────────┘  └──────────────┘  └───────────┘  │    │
 │  └──────────────────────────────────────────────────────┘   │
-│                          │                                   │
-└──────────────────────────┼───────────────────────────────────┘
+└─────────────────────────────────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────┐
@@ -51,54 +60,99 @@
 │  │Directions│  │    AI    │  │Deep Links│  │Deep Links│     │
 │  └──────────┘  └──────────┘  └──────────┘  └──────────┘     │
 └─────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      DATA SOURCES                            │
-│  ┌────────────────────┐  ┌────────────────────┐             │
-│  │   OpenCity.in      │  │   Static Data      │             │
-│  │  - BMTC CSV        │  │  - Metro Stations  │             │
-│  │  - Mumbai KML      │  │  - Fare Configs    │             │
-│  └────────────────────┘  └────────────────────┘             │
-└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Data Flow
+## User-Type Specific Processing
 
-### Query Processing
+### Student Flow
 
 ```
-User Input
-    │
-    ▼
-Intent Parser ──────────────────────────┐
-    │                                   │
-    ▼                                   │
-Parse origin, destination, city         │
-    │                                   │
-    ▼                                   │
-┌───────────────────────────────────────┴─────┐
-│            Route by User Type               │
-├─────────────────┬─────────────┬─────────────┤
-│    Student      │   Elderly   │   Tourist   │
-│ student_optimizer│ elderly_router│ ai_planner │
-└─────────────────┴─────────────┴─────────────┘
-         │                │              │
-         ▼                ▼              ▼
-┌─────────────────────────────────────────────┐
-│             Hybrid Router                   │
-│  1. Get coordinates (aliases/geocoding)     │
-│  2. Find nearest transit stops              │
-│  3. Find connecting routes                  │
-│  4. Calculate walking segments              │
-│  5. Build multi-modal route                 │
-└─────────────────────────────────────────────┘
+Query: "Hebbal to Majestic"
          │
          ▼
-    Response JSON
+┌─────────────────────────────────┐
+│     student_optimizer.py        │
+│  1. Get hybrid router results   │
+│  2. Build all route options     │
+│  3. Sort by cost → cheapest     │
+│  4. Sort by time → fastest      │
+│  5. Return all_options array    │
+└─────────────────────────────────┘
+         │
+         ▼
+Response: {
+  cheapest: Bus ₹25,
+  fastest: Auto ₹132,
+  all_options: [Bus, Metro, Auto]
+}
 ```
+
+### Elderly Flow
+
+```
+Query: "Jayanagar to Majestic"
+         │
+         ▼
+┌─────────────────────────────────┐
+│      elderly_router.py          │
+│  1. Build all route options     │
+│  2. Calculate comfort score     │
+│     - AC: +20, Seating: +15     │
+│     - Door-to-door: +25         │
+│     - Walking <100m: +20        │
+│  3. Sort by comfort score DESC  │
+│  4. Return ranked options       │
+└─────────────────────────────────┘
+         │
+         ▼
+Response: {
+  most_comfortable: Cab (115),
+  all_options: [Cab, Auto, Metro, Bus]
+}
+```
+
+### Tourist Flow
+
+```
+Query: "I'm in Hampi for 3 days"
+         │
+         ▼
+┌─────────────────────────────────┐
+│   tourist_conversation.py       │
+│  1. Extract location + days     │
+│  2. Create session state        │
+│  3. Ask preference questions    │
+│  4. Collect user answers        │
+│  5. Call Gemini AI for places   │
+│  6. Filter within 50km          │
+│  7. Return recommendations      │
+└─────────────────────────────────┘
+         │
+         ▼
+Response: {
+  type: "question",
+  message: "What kind of traveler?",
+  options: ["Adventurer", "Culture", ...]
+}
+```
+
+---
+
+## Backend Services Reference
+
+| Service | File | Purpose |
+|---------|------|---------|
+| Intent Parser | `intent_parser.py` | Extract origin, destination, city from NL |
+| Student Optimizer | `student_optimizer.py` | Cheapest/fastest routes + all options |
+| Elderly Router | `elderly_router.py` | Comfort-scored route ranking |
+| Tourist Conversation | `tourist_conversation.py` | AI conversational recommendation |
+| Hybrid Router | `hybrid_router.py` | Multi-modal route planning |
+| Transit Data | `transit_data_service.py` | OpenCity.in data loader |
+| Mapbox Directions | `mapbox_directions.py` | Walking directions, geocoding |
+| Ride Pricing | `ride_pricing.py` | Ola/Uber/Rapido estimates |
+| Translation | `translation_service.py` | Multi-language support |
 
 ---
 
@@ -139,53 +193,9 @@ python-multipart>=0.0.6
 
 **Total Records:** 2,957 stops
 
-### Bengaluru Metro (`metro_stations.json`)
+### Static Transit Lines (`transit_lines.json`)
 
-```json
-{
-  "lines": {
-    "Purple": { "stations": [...], "color": "#800080" },
-    "Green": { "stations": [...], "color": "#008000" },
-    "Yellow": { "stations": [...], "color": "#FFFF00" }
-  },
-  "fares": {
-    "base_fare": 10,
-    "per_station": 2,
-    "max_fare": 60
-  }
-}
-```
-
-**Total Stations:** 77
-
----
-
-## Location Alias System
-
-Maps user-friendly names to coordinates:
-
-```python
-BENGALURU_ALIASES = {
-    "majestic": {"lat": 12.9764, "lon": 77.5707},
-    "hebbal": {"lat": 13.0358, "lon": 77.5970},
-    "indiranagar": {"lat": 12.9719, "lon": 77.6412},
-    "koramangala": {"lat": 12.9352, "lon": 77.6245},
-    "whitefield": {"lat": 12.9698, "lon": 77.7500},
-    # ... 20+ more locations
-}
-```
-
----
-
-## API Endpoints Reference
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/voice-query` | Process travel query |
-| GET | `/health` | Server health check |
-| POST | `/tourist/plan` | AI itinerary planning |
-| POST | `/transcribe` | Audio to text |
-| GET | `/geocode/{place}` | Place to coordinates |
+Major routes for fallback when OpenCity data lacks connectivity.
 
 ---
 
@@ -196,6 +206,7 @@ BENGALURU_ALIASES = {
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `TOKEN` | Yes | Mapbox API token |
+| `GEMINI_API_KEY` | No | Gemini AI for tourist recommendations |
 | `OPENAI_API_KEY` | No | OpenAI for AI planning |
 | `GOOGLE_MAPS_API_KEY` | No | Traffic data |
 | `HUGGINGFACE_API_KEY` | No | Whisper transcription |
@@ -206,6 +217,17 @@ BENGALURU_ALIASES = {
 |---------|------|-------------|
 | Frontend | 5500 | Static file server |
 | Backend | 8000 | FastAPI server |
+
+---
+
+## API Endpoints Reference
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/voice-query` | Process travel query (all user types) |
+| GET | `/health` | Server health check |
+| POST | `/transcribe` | Audio to text (Whisper) |
+| POST | `/translate` | Text translation |
 
 ---
 
@@ -230,4 +252,5 @@ python -m http.server 5500
 2. Enable HTTPS
 3. Add rate limiting
 4. Cache transit data
-5. Use Redis for session storage
+5. Use Redis for session storage (tourist conversations)
+6. Set up Gemini API key for full tourist features
