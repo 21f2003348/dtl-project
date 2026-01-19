@@ -8,11 +8,13 @@ try:
 except ImportError:
 	load_dotenv = None
 
-from routes.voice_query import router as voice_query_router
+from routes.text_query import router as text_query_router
 from routes.student_onboarding import router as student_router
 from routes.usual_routes import router as usual_routes_router
 from routes.tourist_routes import router as tourist_router
 from routes.transit_routes import router as transit_router
+from routes.transcription_routes import router as transcription_router
+from routes.translation_routes import router as translation_router
 from services.data_loader import StaticDataStore
 from services.conversation_state import ConversationStateManager
 
@@ -65,8 +67,11 @@ async def health() -> dict:
 	return {"status": "ok"}
 
 
-app.include_router(voice_query_router)
+app.include_router(text_query_router)
 app.include_router(student_router)
 app.include_router(usual_routes_router)
 app.include_router(tourist_router)
 app.include_router(transit_router)
+app.include_router(transcription_router)
+app.include_router(translation_router)
+
