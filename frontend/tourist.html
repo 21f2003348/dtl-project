@@ -1,87 +1,353 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Tourist Travel Assistant - Explore the city and find amazing attractions">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Tourist Travel Assistant - Explore the city and find amazing attractions"
+    />
     <title>Tourist Assistant</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-</head>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* Tourist form styling */
+      .tourist-form-container {
+        padding: 20px;
+        height: calc(100vh - 140px);
+        overflow-y: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-<body>
+      .tourist-form-container .card {
+        width: 100%;
+        max-width: 500px;
+        background: rgba(30, 30, 45, 0.8);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        box-shadow: 0 0 30px rgba(245, 158, 11, 0.2);
+      }
+
+      .tourist-form-container h2 {
+        color: #fbbf24;
+        font-size: 1.8em;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #fbbf24;
+        font-weight: 600;
+        font-size: 1em;
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(245, 158, 11, 0.4);
+        border-radius: 8px;
+        color: #ffffff;
+        font-size: 1em;
+        transition: all 0.3s ease;
+      }
+
+      .form-input:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.12);
+        border-color: #fbbf24;
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+      }
+
+      .form-input option {
+        background: #1a1a24;
+        color: #ffffff;
+      }
+
+      #destinationInfo {
+        background: rgba(245, 158, 11, 0.15) !important;
+        border: 1px solid rgba(245, 158, 11, 0.3) !important;
+        border-radius: 8px !important;
+      }
+
+      #destinationInfo p {
+        color: #fbbf24;
+      }
+
+      #destinationBestFor {
+        color: #a1a1aa !important;
+      }
+
+      .btn--primary {
+        background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        color: #1a1a24;
+        border: none;
+        padding: 14px 24px;
+        font-weight: 600;
+        font-size: 1.05em;
+        transition: all 0.3s ease;
+      }
+
+      .btn--primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+      }
+
+      .btn--primary:active {
+        transform: translateY(0);
+      }
+
+      .btn--primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .text-muted {
+        color: #a1a1aa;
+      }
+
+      .text-center {
+        text-align: center;
+      }
+
+      /* Itinerary styling - FIXED DARK THEME */
+      .itinerary-container {
+        background: linear-gradient(
+          135deg,
+          rgba(245, 158, 11, 0.2) 0%,
+          rgba(191, 144, 0, 0.15) 100%
+        ) !important;
+        border: 1px solid rgba(245, 158, 11, 0.3) !important;
+        padding: 20px !important;
+        border-radius: 12px !important;
+        margin-bottom: 20px !important;
+      }
+
+      .itinerary-container h3 {
+        color: #fbbf24 !important;
+        margin-top: 0 !important;
+        font-size: 1.3em !important;
+      }
+
+      .itinerary-container p {
+        color: #e0e7ff !important;
+        margin: 8px 0 !important;
+      }
+
+      .itinerary-container strong {
+        color: #fbbf24;
+      }
+
+      /* Day plan cards */
+      [style*="border-left: 4px solid #f59e0b"] {
+        background: rgba(245, 158, 11, 0.1) !important;
+        border-left: 4px solid #f59e0b !important;
+        border-top: 1px solid rgba(245, 158, 11, 0.2) !important;
+        border-right: 1px solid rgba(245, 158, 11, 0.2) !important;
+        border-bottom: 1px solid rgba(245, 158, 11, 0.2) !important;
+      }
+
+      [style*="border-left: 4px solid #f59e0b"] h4 {
+        color: #fbbf24 !important;
+      }
+
+      [style*="border-left: 4px solid #f59e0b"] strong {
+        color: #fbbf24;
+      }
+
+      [style*="border-left: 4px solid #f59e0b"] em {
+        color: #a1a1aa;
+      }
+
+      [style*="color: #27ae60"] {
+        color: #10b981 !important;
+      }
+
+      [style*="color: #27ae60"] strong {
+        color: #34d399 !important;
+      }
+    </style>
+  </head>
+
+  <body>
     <!-- Header -->
     <header class="header">
-        <div class="header__logo">
-            <span class="header__logo-icon">🧳</span>
-            <span data-i18n="tourist">Tourist Assistant</span>
-        </div>
-        <nav class="header__nav">
-            <button class="btn btn--ghost" id="languageBtn" title="Change Language">
-                🌐 <span id="currentLangLabel">EN</span>
-            </button>
-        </nav>
+      <div class="header__logo">
+        <span class="header__logo-icon">🧳</span>
+        <span data-i18n="tourist">Tourist Assistant</span>
+      </div>
+      <nav class="header__nav">
+        <button class="btn btn--ghost" id="languageBtn" title="Change Language">
+          🌐 <span id="currentLangLabel">EN</span>
+        </button>
+      </nav>
     </header>
 
     <!-- Main Content -->
     <main class="main">
-        <div class="chat-page">
-            <!-- Chat Header -->
-            <div class="chat-header">
-                <div class="chat-header__back" id="backBtn">
-                    <span>←</span>
-                    <span data-i18n="back">Back</span>
-                </div>
-                <h1 class="chat-header__title" data-i18n="tourist">Tourist</h1>
-            </div>
-
-            <!-- Chat Body -->
-            <div class="chat-body" id="chatBody">
-                <!-- Messages will be added here -->
-            </div>
-
-            <!-- Chat Input -->
-            <div class="chat-input-container">
-                <div class="chat-input-wrapper">
-                    <input type="text" class="chat-input" id="chatInput" data-i18n-placeholder="typeMessage"
-                        placeholder="Type your message...">
-                    <button class="voice-btn" id="voiceBtn" title="Voice Input">
-                        🎤
-                    </button>
-                    <button class="btn btn--primary" id="sendBtn" data-i18n="send">
-                        Send
-                    </button>
-                </div>
-                <p class="text-center text-muted mt-1" id="recordingStatus"></p>
-            </div>
+      <div class="chat-page">
+        <!-- Chat Header -->
+        <div class="chat-header">
+          <div class="chat-header__back" id="backBtn">
+            <span>←</span>
+            <span data-i18n="back">Back</span>
+          </div>
+          <h1 class="chat-header__title" data-i18n="tourist">Tourist</h1>
         </div>
+
+        <!-- Destination Selection Form -->
+        <div class="tourist-form-container" id="touristFormContainer">
+          <div class="card">
+            <h2 style="margin-top: 0" data-i18n="selectDestination">
+              Select Your Destination
+            </h2>
+
+            <!-- City Selection -->
+            <div class="form-group">
+              <label for="destinationSelect">📍 City/Destination</label>
+              <div
+                class="destination-loader"
+                id="destinationLoader"
+                style="text-align: center; padding: 10px"
+              >
+                <p style="color: #999">Loading destinations...</p>
+              </div>
+              <select
+                id="destinationSelect"
+                class="form-input"
+                style="display: none"
+              >
+                <option value="">Select a destination...</option>
+              </select>
+              <div
+                id="destinationInfo"
+                style="
+                  margin-top: 10px;
+                  padding: 10px;
+                  background: #f5f5f5;
+                  border-radius: 8px;
+                  display: none;
+                "
+              >
+                <p id="destinationPlaces" style="margin: 0"></p>
+                <p
+                  id="destinationBestFor"
+                  style="margin: 5px 0 0 0; font-size: 0.9em; color: #666"
+                ></p>
+              </div>
+            </div>
+
+            <!-- Number of People -->
+            <div class="form-group">
+              <label for="numPeople">👥 Number of People</label>
+              <input
+                type="number"
+                id="numPeople"
+                class="form-input"
+                min="1"
+                max="20"
+                value="2"
+                placeholder="Enter number of people"
+              />
+            </div>
+
+            <!-- Number of Days -->
+            <div class="form-group">
+              <label for="numDays">📅 Number of Days</label>
+              <input
+                type="number"
+                id="numDays"
+                class="form-input"
+                min="1"
+                max="30"
+                value="2"
+                placeholder="Enter number of days"
+              />
+            </div>
+
+            <!-- Generate Button -->
+            <button
+              id="generateItineraryBtn"
+              class="btn btn--primary"
+              style="width: 100%; margin-top: 15px"
+            >
+              ✨ Generate Itinerary
+            </button>
+            <p
+              class="text-muted text-center"
+              style="font-size: 0.85em; margin-top: 10px"
+            >
+              💡 We'll create a perfect itinerary based on your preferences
+            </p>
+          </div>
+        </div>
+
+        <!-- Chat Body -->
+        <div class="chat-body" id="chatBody" style="display: none">
+          <!-- Messages will be added here -->
+        </div>
+
+        <!-- Chat Input -->
+        <div
+          class="chat-input-container"
+          id="chatInputContainer"
+          style="display: none"
+        >
+          <div class="chat-input-wrapper">
+            <input
+              type="text"
+              class="chat-input"
+              id="chatInput"
+              data-i18n-placeholder="typeMessage"
+              placeholder="Type your message..."
+            />
+            <button class="voice-btn" id="voiceBtn" title="Voice Input">
+              🎤
+            </button>
+            <button class="btn btn--primary" id="sendBtn" data-i18n="send">
+              Send
+            </button>
+          </div>
+          <p class="text-center text-muted mt-1" id="recordingStatus"></p>
+        </div>
+      </div>
     </main>
 
     <!-- Language Modal -->
     <div class="modal-overlay" id="languageModal">
-        <div class="modal">
-            <h2 class="modal__title" data-i18n="selectLanguage">Select Language</h2>
-            <div class="language-options">
-                <div class="language-option" data-lang="en">
-                    <span class="language-option__flag">🇬🇧</span>
-                    <span class="language-option__name">English</span>
-                    <span class="language-option__native">English</span>
-                </div>
-                <div class="language-option" data-lang="hi">
-                    <span class="language-option__flag">🇮🇳</span>
-                    <span class="language-option__name">Hindi</span>
-                    <span class="language-option__native">हिंदी</span>
-                </div>
-                <div class="language-option" data-lang="kn">
-                    <span class="language-option__flag">🇮🇳</span>
-                    <span class="language-option__name">Kannada</span>
-                    <span class="language-option__native">ಕನ್ನಡ</span>
-                </div>
-            </div>
+      <div class="modal">
+        <h2 class="modal__title" data-i18n="selectLanguage">Select Language</h2>
+        <div class="language-options">
+          <div class="language-option" data-lang="en">
+            <span class="language-option__flag">🇬🇧</span>
+            <span class="language-option__name">English</span>
+            <span class="language-option__native">English</span>
+          </div>
+          <div class="language-option" data-lang="hi">
+            <span class="language-option__flag">🇮🇳</span>
+            <span class="language-option__name">Hindi</span>
+            <span class="language-option__native">हिंदी</span>
+          </div>
+          <div class="language-option" data-lang="kn">
+            <span class="language-option__flag">🇮🇳</span>
+            <span class="language-option__name">Kannada</span>
+            <span class="language-option__native">ಕನ್ನಡ</span>
+          </div>
         </div>
+      </div>
     </div>
 
     <!-- Toast Container -->
@@ -90,11 +356,218 @@
     <script src="app.js"></script>
     <script src="chat.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Initialize chat for tourist
-            window.ChatAssistant.initChat('tourist');
-        });
-    </script>
-</body>
+      // Tourist-specific initialization
+      const API_BASE_URL = "http://127.0.0.1:8000";
 
+      async function loadDestinations() {
+        try {
+          console.log(
+            "Loading destinations from:",
+            `${API_BASE_URL}/tourist/destinations`,
+          );
+          const response = await fetch(`${API_BASE_URL}/tourist/destinations`);
+          const data = await response.json();
+
+          if (data.status === "success" && data.destinations) {
+            const select = document.getElementById("destinationSelect");
+            const loader = document.getElementById("destinationLoader");
+
+            // Clear loader
+            loader.style.display = "none";
+            select.style.display = "block";
+
+            // Populate destinations
+            data.destinations.forEach((dest) => {
+              const option = document.createElement("option");
+              option.value = dest.city_key;
+              option.textContent = `${dest.city}, ${dest.state}`;
+              option.dataset.name = dest.city;
+              option.dataset.places = dest.places_count;
+              option.dataset.popular = dest.popular_places.join(", ");
+              option.dataset.bestFor = dest.best_for.join(", ");
+              select.appendChild(option);
+            });
+
+            console.log(
+              "Destinations loaded successfully:",
+              data.destinations.length,
+            );
+            // Store destinations for later use
+            window.touristDestinations = data.destinations;
+          } else {
+            document.getElementById("destinationLoader").innerHTML =
+              '<p style="color: #e74c3c;">❌ Failed to load destinations. Please refresh.</p>';
+            console.error("Invalid response:", data);
+          }
+        } catch (error) {
+          console.error("Error loading destinations:", error);
+          document.getElementById("destinationLoader").innerHTML =
+            '<p style="color: #e74c3c;">⚠️ Error loading destinations. Server may be offline.</p>';
+        }
+      }
+
+      function setupDestinationSelect() {
+        const select = document.getElementById("destinationSelect");
+        const info = document.getElementById("destinationInfo");
+        const places = document.getElementById("destinationPlaces");
+        const bestFor = document.getElementById("destinationBestFor");
+
+        select.addEventListener("change", (e) => {
+          if (e.target.value) {
+            const option = e.target.selectedOptions[0];
+            places.textContent = `📍 ${option.dataset.places} famous places`;
+            bestFor.textContent = `Perfect for: ${option.dataset.bestFor}`;
+            info.style.display = "block";
+          } else {
+            info.style.display = "none";
+          }
+        });
+      }
+
+      async function generateItinerary() {
+        const select = document.getElementById("destinationSelect");
+        const numPeople = document.getElementById("numPeople").value;
+        const numDays = document.getElementById("numDays").value;
+
+        if (!select.value) {
+          alert("Please select a destination");
+          return;
+        }
+
+        // Find destination city name
+        const option = select.selectedOptions[0];
+        const cityName = option.dataset.name;
+
+        try {
+          const generateBtn = document.getElementById("generateItineraryBtn");
+          generateBtn.disabled = true;
+          generateBtn.textContent = "⏳ Generating...";
+
+          // Get auth token if logged in
+          const authToken = localStorage.getItem("authToken");
+          const headers = { "Content-Type": "application/json" };
+          if (authToken) {
+            headers["Authorization"] = `Bearer ${authToken}`;
+          }
+
+          const response = await fetch(`${API_BASE_URL}/tourist/itinerary`, {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify({
+              city: cityName,
+              num_people: parseInt(numPeople),
+              days: parseInt(numDays),
+            }),
+          });
+
+          const data = await response.json();
+
+          // Show save notification if itinerary was auto-saved
+          if (data.itinerary?.saved) {
+            console.log(
+              "✓ Itinerary auto-saved with ID:",
+              data.itinerary.itinerary_id,
+            );
+          }
+
+          // Hide form and show chat
+          document.getElementById("touristFormContainer").style.display =
+            "none";
+          document.getElementById("chatBody").style.display = "block";
+          document.getElementById("chatInputContainer").style.display = "block";
+
+          // Initialize chat
+          window.ChatAssistant.initChat("tourist");
+
+          // Display the itinerary response
+          if (data.status === "error") {
+            window.ChatAssistant.addMessage(
+              `❌ ${data.message}\n\n💡 ${data.suggestion}`,
+              false,
+            );
+          } else {
+            // Format and display the itinerary
+            let itineraryHTML = `
+                        <div class="itinerary-container" style="background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); padding: 20px; border-radius: 10px; color: white; margin-bottom: 15px;">
+                            <h3 style="margin-top: 0;">🗺️ ${data.city} Itinerary</h3>
+                            <p><strong>👥 Travelers:</strong> ${data.num_people} people</p>
+                            <p><strong>📅 Duration:</strong> ${data.days} days</p>
+                            <p style="margin-bottom: 0;"><strong>📍 Places to Visit:</strong> ${data.famous_places.length} attractions</p>
+                        </div>
+                    `;
+
+            // Add daily plans if available
+            if (
+              data.detailed_instructions &&
+              data.detailed_instructions.length > 0
+            ) {
+              data.detailed_instructions.forEach((day, index) => {
+                const dayId = `day-${index}`;
+                itineraryHTML += `
+                                <div style="margin-bottom: 15px; border-left: 4px solid #f59e0b; padding: 15px; background: rgba(245, 158, 11, 0.1); border-radius: 8px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="document.getElementById('${dayId}').style.display = document.getElementById('${dayId}').style.display === 'none' ? 'block' : 'none'; this.querySelector('span').textContent = document.getElementById('${dayId}').style.display === 'none' ? '▼' : '▲';">
+                                        <h4 style="margin: 0; color: #fbbf24;">📅 Day ${day.day}: ${day.theme}</h4>
+                                        <span style="color: #fbbf24; font-size: 1.2em; font-weight: bold;">▲</span>
+                                    </div>
+                                    <div id="${dayId}" style="margin-top: 10px;">
+                                        <div style="margin: 15px 0; padding: 12px; background: rgba(245, 158, 11, 0.2); border-left: 3px solid #fbbf24; border-radius: 4px;">
+                                            <strong style="color: #fbbf24;">🌅 Morning:</strong>
+                                            <div style="color: #a1a1aa; margin-top: 8px; white-space: pre-wrap; line-height: 1.6;">${day.morning}</div>
+                                        </div>
+                                        <div style="margin: 15px 0; padding: 12px; background: rgba(245, 158, 11, 0.2); border-left: 3px solid #fbbf24; border-radius: 4px;">
+                                            <strong style="color: #fbbf24;">☀️ Afternoon:</strong>
+                                            <div style="color: #a1a1aa; margin-top: 8px; white-space: pre-wrap; line-height: 1.6;">${day.afternoon}</div>
+                                        </div>
+                                        <div style="margin: 15px 0; padding: 12px; background: rgba(245, 158, 11, 0.2); border-left: 3px solid #fbbf24; border-radius: 4px;">
+                                            <strong style="color: #fbbf24;">🌆 Evening:</strong>
+                                            <div style="color: #a1a1aa; margin-top: 8px; white-space: pre-wrap; line-height: 1.6;">${day.evening}</div>
+                                        </div>
+                                        <div style="margin: 15px 0; padding: 12px; background: rgba(16, 185, 129, 0.2); border-left: 3px solid #34d399; border-radius: 4px;">
+                                            <strong style="color: #34d399;">💰 Budget:</strong> ${day.estimated_budget}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+              });
+            }
+
+            const msgEl = document.createElement("div");
+            msgEl.className = "message bot-message";
+            msgEl.innerHTML = itineraryHTML;
+            document.getElementById("chatBody").appendChild(msgEl);
+          }
+
+          generateBtn.disabled = false;
+          generateBtn.textContent = "✨ Generate Itinerary";
+        } catch (error) {
+          console.error("Error generating itinerary:", error);
+          alert("Error generating itinerary. Please try again.");
+          generateBtn.disabled = false;
+          generateBtn.textContent = "✨ Generate Itinerary";
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        console.log("Tourist page loaded");
+        // Load destinations on page load
+        loadDestinations();
+
+        // Setup destination selection
+        setTimeout(setupDestinationSelect, 500);
+
+        // Setup generate button
+        document
+          .getElementById("generateItineraryBtn")
+          .addEventListener("click", generateItinerary);
+
+        // Setup back button
+        const backBtn = document.getElementById("backBtn");
+        if (backBtn) {
+          backBtn.addEventListener("click", () => {
+            window.location.href = "index.html?change=true";
+          });
+        }
+      });
+    </script>
+  </body>
 </html>

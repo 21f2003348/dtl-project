@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Itineraries - Travel Assistant</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #1e3a8a 0%, #2d5016 100%);
+        min-height: 100vh;
+        padding: 20px;
+        color: #333;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      header {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      header h1 {
+        color: #1e3a8a;
+        margin-bottom: 10px;
+        font-size: 28px;
+      }
+
+      .itinerary-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+      }
+
+      .itinerary-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        border-left: 4px solid #f59e0b;
+      }
+
+      .itinerary-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+      }
+
+      .itinerary-card h3 {
+        color: #1e3a8a;
+        margin-top: 0;
+        margin-bottom: 10px;
+      }
+
+      .itinerary-meta {
+        display: flex;
+        gap: 15px;
+        margin: 10px 0;
+        color: #666;
+        font-size: 14px;
+      }
+
+      .itinerary-meta span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+      }
+
+      .btn-primary {
+        background: #f59e0b;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #d97706;
+      }
+
+      .btn-danger {
+        background: #ef4444;
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background: #dc2626;
+      }
+
+      .btn-secondary {
+        background: #e5e7eb;
+        color: #333;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 12px;
+      }
+
+      .alert {
+        padding: 12px 16px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        display: none;
+      }
+
+      .alert.show {
+        display: block;
+      }
+
+      .alert-success {
+        background: #d1fae5;
+        color: #065f46;
+        border-left: 4px solid #10b981;
+      }
+
+      .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+        border-left: 4px solid #ef4444;
+      }
+
+      .controls {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .itinerary-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .timestamp {
+        color: #999;
+        font-size: 12px;
+        margin-top: 10px;
+      }
+
+      /* Detail modal */
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        display: grid;
+        place-items: center;
+        padding: 20px;
+        z-index: 999;
+      }
+
+      .modal.hidden {
+        display: none;
+      }
+
+      .modal__dialog {
+        background: #fff;
+        border-radius: 12px;
+        width: 60vw;
+        min-width: 50vw;
+        min-height: 50vh;
+        max-width: 1200px;
+        max-height: 90vh;
+        overflow: auto;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+        padding: 24px;
+        margin: 0;
+      }
+
+      .modal__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .modal__title {
+        margin: 0;
+        color: #1e3a8a;
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 10px 0;
+      }
+
+      .chip {
+        background: #eef2ff;
+        color: #1e3a8a;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        border: 1px solid #c7d2fe;
+      }
+
+      .section {
+        margin: 14px 0;
+      }
+
+      .section h4 {
+        margin: 0 0 6px 0;
+        color: #111827;
+      }
+
+      .day-card {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-left: 4px solid #f59e0b;
+        border-radius: 10px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+      }
+
+      .day-card h5 {
+        margin: 0 0 6px 0;
+        color: #1f2937;
+        font-size: 15px;
+      }
+
+      .day-row {
+        margin: 6px 0;
+        color: #374151;
+        font-size: 13px;
+        white-space: pre-wrap;
+      }
+
+      .pill {
+        display: inline-block;
+        background: #eef2ff;
+        color: #1e3a8a;
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        margin-right: 6px;
+      }
+
+      .section ul {
+        padding-left: 18px;
+        margin: 0;
+      }
+
+      .section code {
+        display: block;
+        background: #f3f4f6;
+        padding: 10px;
+        border-radius: 8px;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+          "
+        >
+          <div>
+            <h1>🗺️ My Itineraries</h1>
+            <p>View and manage your saved travel plans</p>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button class="btn btn-primary" onclick="loadItineraries()">
+            🔄 Refresh
+          </button>
+          <button
+            class="btn btn-secondary"
+            onclick="window.location.href = 'index.html'"
+          >
+            ← Back to Home
+          </button>
+        </div>
+      </header>
+
+      <div id="alert" class="alert"></div>
+
+      <div id="itinerariesContainer" class="itinerary-list"></div>
+    </div>
+
+    <!-- Detail modal (shared) -->
+    <div id="detailModal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal__dialog">
+        <div class="modal__header">
+          <h2 class="modal__title" id="detailTitle">Itinerary Details</h2>
+          <button class="btn btn-secondary" onclick="closeDetail()">
+            ✖ Close
+          </button>
+        </div>
+        <div id="detailContent"></div>
+      </div>
+    </div>
+
+    <script>
+      const currentToken = localStorage.getItem("authToken");
+      const currentUser = localStorage.getItem("currentUser");
+
+      document.addEventListener("DOMContentLoaded", function () {
+        if (currentToken) {
+          loadItineraries();
+        } else {
+          showMessage("Please login to view your itineraries", "error");
+          showEmptyState(
+            "Login Required",
+            "Please login to see your saved itineraries",
+          );
+        }
+      });
+
+      async function loadItineraries() {
+        if (!currentToken) {
+          showMessage("Please login first", "error");
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            "http://localhost:8000/itinerary/list?days=365",
+            {
+              headers: {
+                Authorization: `Bearer ${currentToken}`,
+              },
+            },
+          );
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch itineraries");
+          }
+
+          const data = await response.json();
+
+          if (data.itineraries.length === 0) {
+            showEmptyState(
+              "No Itineraries Yet",
+              "Start planning your trips by visiting the Tourist page!",
+            );
+          } else {
+            displayItineraries(data.itineraries);
+          }
+        } catch (error) {
+          showMessage("Error loading itineraries: " + error.message, "error");
+        }
+      }
+
+      function normalizePlaces(rawPlaces) {
+        return (rawPlaces || []).map((p) => {
+          if (typeof p === "string") return p;
+          if (p && typeof p === "object") {
+            return (
+              p.name || p.title || p.place || p.location || JSON.stringify(p)
+            );
+          }
+          return String(p);
+        });
+      }
+
+      function displayItineraries(itineraries) {
+        const container = document.getElementById("itinerariesContainer");
+
+        container.innerHTML = itineraries
+          .map((itin) => {
+            const data = itin.itinerary_data;
+            const places = normalizePlaces(
+              data.must_visit_places || data.famous_places || [],
+            );
+
+            return `
+                    <div class="itinerary-card">
+                        <h3>🌍 ${itin.title}</h3>
+                        <div class="itinerary-meta">
+                            <span>📍 ${itin.city}</span>
+                            <span>📅 ${itin.days} day${itin.days > 1 ? "s" : ""}</span>
+                            <span>👥 ${itin.num_people} ${itin.num_people > 1 ? "people" : "person"}</span>
+                        </div>
+                        ${
+                          places.length > 0
+                            ? `
+                        <p style="margin: 10px 0; color: #666;">
+                            <strong>Places:</strong> ${places.slice(0, 3).join(", ")}${places.length > 3 ? "..." : ""}
+                        </p>
+                        `
+                            : ""
+                        }
+                        <div class="timestamp">
+                            Created: ${new Date(itin.created_at).toLocaleString()}
+                        </div>
+                        <div class="itinerary-actions">
+                            <button class="btn btn-primary" onclick="viewItinerary(${itin.id})">👁️ View Details</button>
+                            <button class="btn btn-danger" onclick="deleteItinerary(${itin.id})">🗑️ Delete</button>
+                        </div>
+                    </div>
+                `;
+          })
+          .join("");
+      }
+
+      function viewItinerary(id) {
+        if (!currentToken) {
+          showMessage("Please login first", "error");
+          return;
+        }
+
+        fetch(`http://localhost:8000/itinerary/${id}`, {
+          headers: {
+            Authorization: `Bearer ${currentToken}`,
+          },
+        })
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error("Unable to fetch itinerary");
+            }
+            return res.json();
+          })
+          .then((data) => {
+            if (!data || !data.itinerary) {
+              throw new Error("Itinerary not found");
+            }
+            renderItineraryDetails(data.itinerary);
+          })
+          .catch((err) => {
+            showMessage("Error: " + err.message, "error");
+          });
+      }
+
+      async function deleteItinerary(id) {
+        if (!confirm("Are you sure you want to delete this itinerary?")) {
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `http://localhost:8000/itinerary/${id}`,
+            {
+              method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${currentToken}`,
+              },
+            },
+          );
+
+          if (response.ok) {
+            if (!currentToken) {
+              showMessage("Please login first", "error");
+              return;
+            }
+
+            fetch(`http://localhost:8000/itinerary/${id}`, {
+              headers: {
+                Authorization: `Bearer ${currentToken}`,
+              },
+            })
+              .then((res) => {
+                if (!res.ok) {
+                  throw new Error("Unable to fetch itinerary");
+                }
+                return res.json();
+              })
+              .then((data) => {
+                if (!data || !data.itinerary) {
+                  throw new Error("Itinerary not found");
+                }
+                renderItineraryDetails(data.itinerary);
+              })
+              .catch((err) => {
+                showMessage("Error: " + err.message, "error");
+              });
+          } else {
+            showMessage("Failed to delete itinerary", "error");
+          }
+        } catch (error) {
+          showMessage("Error: " + error.message, "error");
+        }
+      }
+
+      function showEmptyState(title, message) {
+        document.getElementById("itinerariesContainer").innerHTML = `
+                <div class="empty-state">
+                    <h2>${title}</h2>
+                    <p>${message}</p>
+                    <button class="btn btn-primary" onclick="window.location.href='tourist.html'" style="margin-top: 20px;">
+                        ➕ Create New Itinerary
+                    </button>
+                </div>
+            `;
+      }
+
+      function showMessage(message, type) {
+        const alert = document.getElementById("alert");
+        alert.textContent = message;
+        alert.className = `alert alert-${type} show`;
+        setTimeout(() => {
+          alert.classList.remove("show");
+        }, 4000);
+      }
+
+      function renderItineraryDetails(itinerary) {
+        const modal = document.getElementById("detailModal");
+        const titleEl = document.getElementById("detailTitle");
+        const content = document.getElementById("detailContent");
+
+        titleEl.textContent = `🗺️ ${itinerary.title}`;
+
+        const places = normalizePlaces(
+          itinerary.itinerary_data?.must_visit_places ||
+            itinerary.itinerary_data?.famous_places ||
+            [],
+        );
+        const dailyPlan =
+          itinerary.itinerary_data?.daily_plan ||
+          itinerary.itinerary_data?.plan ||
+          null;
+
+        const chipItems = [
+          `📍 ${itinerary.city}`,
+          `📅 ${itinerary.days} day${itinerary.days > 1 ? "s" : ""}`,
+          `👥 ${itinerary.num_people} ${itinerary.num_people > 1 ? "people" : "person"}`,
+          itinerary.interests ? `🎯 Interests: ${itinerary.interests}` : null,
+          itinerary.budget ? `💰 Budget: ${itinerary.budget}` : null,
+          itinerary.created_at
+            ? `🕒 Created: ${new Date(itinerary.created_at).toLocaleString()}`
+            : null,
+        ].filter(Boolean);
+
+        const placesSection = places.length
+          ? `
+                <div class="section">
+                    <h4>Must visit</h4>
+                    <ul>${places.map((p) => `<li>${p}</li>`).join("")}</ul>
+                </div>
+            `
+          : "";
+
+        const dailyPlanSection = dailyPlan
+          ? `
+                <div class="section">
+                    <h4>Daily plan</h4>
+                    ${renderDailyPlan(dailyPlan)}
+                </div>
+            `
+          : "";
+
+        content.innerHTML = `
+                <div class="chip-row">
+                    ${chipItems.map((item) => `<span class="chip">${item}</span>`).join("")}
+                </div>
+                ${placesSection}
+                ${dailyPlanSection}
+            `;
+
+        modal.classList.remove("hidden");
+      }
+
+      function closeDetail() {
+        const modal = document.getElementById("detailModal");
+        modal.classList.add("hidden");
+      }
+
+      function renderDailyPlan(plan) {
+        if (!Array.isArray(plan)) return "";
+        return plan
+          .map((day) => {
+            const tips = Array.isArray(day.tips)
+              ? `<div class="day-row"><strong>Tips:</strong> ${day.tips.join("; ")}</div>`
+              : "";
+            const budget = day.estimated_budget
+              ? `<span class="pill">💰 ${day.estimated_budget}</span>`
+              : "";
+            return `
+                    <div class="day-card">
+                        <h5>Day ${day.day || ""} ${day.theme ? "– " + day.theme : ""}</h5>
+                        <div class="day-row"><strong>Morning:</strong> ${day.morning || "—"}</div>
+                        <div class="day-row"><strong>Afternoon:</strong> ${day.afternoon || "—"}</div>
+                        <div class="day-row"><strong>Evening:</strong> ${day.evening || "—"}</div>
+                        ${tips}
+                        ${budget ? `<div class="day-row">${budget}</div>` : ""}
+                    </div>
+                `;
+          })
+          .join("");
+      }
+    </script>
+  </body>
+</html>

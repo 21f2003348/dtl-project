@@ -202,46 +202,65 @@ class TransitDataService:
     }
     
     def find_stop(self, name: str, city: str = "bengaluru", mode: str = None) -> Optional[Dict]:
-        """Find a stop by name, using aliases and coordinate fallback."""
+        """Find a stop by name, using aliases and coordinate fallback with improved fuzzy matching."""
         name_lower = name.lower().strip()
+        print(f"[TransitDataService.find_stop] Looking for '{name}' in {city}, mode={mode}")
         
         # 1. Try exact match first
         key = f"{city}:{name_lower}"
         stop = self._stop_index.get(key)
         if stop and (mode is None or stop.get('mode') == mode):
+            print(f"[TransitDataService] ✓ Exact match found: {stop.get('name')}")
             return stop
         
         # 2. Try alias lookup for Bengaluru
         if city == "bengaluru" and name_lower in self.BENGALURU_ALIASES:
             alias_info = self.BENGALURU_ALIASES[name_lower]
+            print(f"[TransitDataService] Found alias '{name_lower}' at lat={alias_info['lat']}, lon={alias_info['lon']}")
             # Find nearest stop to alias coordinates
-            return self.find_nearest_stop(
+            nearest = self.find_nearest_stop(
                 alias_info["lat"], alias_info["lon"], 
-                city, mode, max_distance_km=1.0
+                city, mode, max_distance_km=2.0  # Increased from 1.0 to 2km
             )
+            if nearest:
+                print(f"[TransitDataService] ✓ Nearest stop to alias: {nearest.get('name')}")
+                return nearest
         
         # 3. Try alias keywords
         for alias_name, alias_info in self.BENGALURU_ALIASES.items():
             if name_lower in alias_info.get("keywords", []) or alias_name in name_lower:
-                return self.find_nearest_stop(
+                print(f"[TransitDataService] Found keyword match '{name_lower}' for alias '{alias_name}'")
+                nearest = self.find_nearest_stop(
                     alias_info["lat"], alias_info["lon"],
-                    city, mode, max_distance_km=1.0
+                    city, mode, max_distance_km=2.0  # Increased from 1.0
                 )
+                if nearest:
+                    print(f"[TransitDataService] ✓ Nearest stop to keyword: {nearest.get('name')}")
+                    return nearest
         
-        # 4. Fuzzy substring match
-        for k, v in self._stop_index.items():
-            if k.startswith(f"{city}:") and name_lower in k:
-                if mode is None or v.get('mode') == mode:
-                    return v
-        
-        # 5. Reverse fuzzy match (stop name contains query)
+        # 4. Smart fuzzy match - split name into words and try each
+        words = name_lower.split()
+        candidates = []
         for k, v in self._stop_index.items():
             if k.startswith(f"{city}:"):
+                if mode and v.get('mode') != mode:
+                    continue
                 stop_name_lower = k.split(":", 1)[1]
-                if name_lower in stop_name_lower or stop_name_lower in name_lower:
-                    if mode is None or v.get('mode') == mode:
-                        return v
+                # Count how many words match
+                word_matches = sum(1 for word in words if word in stop_name_lower)
+                if word_matches > 0:
+                    candidates.append((stop_name_lower, v, word_matches))
         
+        if candidates:
+            # Sort by number of matching words (descending), then by exact substring match
+            candidates.sort(key=lambda x: (-x[2], -len(x[0])))
+            best_match = candidates[0]
+            print(f"[TransitDataService] ✓ Fuzzy match: '{name}' → {best_match[0]} (matches={best_match[2]})")
+            return best_match[1]
+        
+        # 5. Last resort: Try to find using coordinates from Google Maps
+        # This would require adding a coordinates lookup, but for now return None
+        print(f"[TransitDataService] ✗ No match found for '{name}' in {city}")
         return None
     
     def find_nearest_stop(self, lat: float, lon: float, city: str = "bengaluru", 

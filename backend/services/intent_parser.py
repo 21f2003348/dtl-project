@@ -41,17 +41,23 @@ def parse_intent(transcript: str, user_type: str) -> Dict[str, str]:
             origin = simple_route.group(1).strip().title()
             destination = simple_route.group(2).strip().title()
     
-    # Pattern 4: Just "to X" or "go to X" (destination only)
+    # Pattern 4: "at X" for origin (e.g., "I'm at RVCE", "student at RVCE")
+    if not origin:
+        at_match = re.search(r"(?:at|in)\s+([a-z0-9\s,]+?)(?:\s+(?:and|need|want|going)|,|$)", text_lower)
+        if at_match:
+            origin = at_match.group(1).strip().title()
+    
+    # Pattern 5: Just "to X" or "go to X" (destination only)
     if not destination:
-        to_match = re.search(r"(?:to|going to|go to|reach)\s+([a-z0-9\s,]+?)(?:\.|$|,|\?|!|\s+from)", text_lower)
+        to_match = re.search(r"(?:to|going to|go to|reach|need to go to)\s+([a-z0-9\s,]+?)(?:\.|$|,|\?|!|\s+from)", text_lower)
         if to_match:
             destination = to_match.group(1).strip().title()
     
-    # Pattern 5: Common landmark/college names as fallback
+    # Pattern 6: Common landmark/college names as fallback
     if not destination:
         destination = _extract_landmark(text_lower)
     
-    # Also extract origin from known landmarks if still missing
+    # Also extract origin from known landmarks if still missing (but avoid duplicating destination)
     if not origin or origin == "current_location":
         origin_candidate = _extract_origin_landmark(text_lower, destination)
         if origin_candidate:
@@ -61,8 +67,15 @@ def parse_intent(transcript: str, user_type: str) -> Dict[str, str]:
     if destination:
         destination = re.sub(r"^(go\s+to\s+|to\s+)", "", destination, flags=re.IGNORECASE).strip().title()
         # Handle "Go To Rvce" -> "RVCE"
-        if destination.lower() in ["rvce", "go to rvce", "rv college"]:
+        if destination.lower() in ["rvce", "go to rvce", "rv college", "rvce college"]:
             destination = "RVCE"
+    
+    # Clean up origin similarly
+    if origin:
+        origin = re.sub(r"^(at\s+|in\s+|from\s+)", "", origin, flags=re.IGNORECASE).strip().title()
+        # Handle "rvce" -> "RVCE"
+        if origin.lower() in ["rvce", "rv college", "rvce college"]:
+            origin = "RVCE"
     
     # Detect city from locations
     city = _detect_city(origin, destination, text_lower)
@@ -108,8 +121,9 @@ def _extract_landmark(text_lower: str) -> Optional[str]:
 
 
 def _extract_origin_landmark(text_lower: str, destination: str) -> Optional[str]:
-    """Extract origin from known landmarks."""
+    """Extract origin from known landmarks, avoiding duplication with destination."""
     landmarks = {
+        "rvce": "RVCE", "rv college": "RVCE",
         "hebbal": "Hebbal",
         "indiranagar": "Indiranagar", 
         "whitefield": "Whitefield",
@@ -121,14 +135,23 @@ def _extract_origin_landmark(text_lower: str, destination: str) -> Optional[str]
         "majestic": "Majestic",
         "mg road": "MG Road",
         "yeshwanthpur": "Yeshwanthpur",
+        "ittamadu": "Ittamadu",
         # Mumbai
         "dadar": "Dadar",
         "andheri": "Andheri",
         "bandra": "Bandra",
         "churchgate": "Churchgate"
     }
+    
+    # Avoid setting origin to same as destination
+    destination_lower = destination.lower() if destination else ""
+    
     for key, value in landmarks.items():
-        if key in text_lower and (not destination or value.lower() != destination.lower()):
+        # Skip if this landmark is the destination
+        if destination and value.lower() == destination_lower:
+            continue
+        # Look for the landmark in text
+        if key in text_lower:
             return value
     return None
 
@@ -160,33 +183,52 @@ def is_follow_up_answer(text: str) -> bool:
         r"^(bus|metro|auto|cab|uber|ola|walk)$",
         r"^(history|nature|food|culture|shopping)$",
         r"^\d+\s*(day|days)?$",  # "3 days" or just "3"
+        r"proceed with (cheapest|fastest|door-to-door|door to door|budget|quick)",
+        r"i'll take the (cheapest|fastest|door-to-door|door to door)",
+        r"^(cheapest|fastest|door-to-door) option",
     ]
-    for pattern in follow_up_patterns:
-        if re.match(pattern, text.strip()):
+    
+    print(f"\n🔵 DEBUG [is_follow_up_answer]: Checking text: '{text}'") 
+    for idx, pattern in enumerate(follow_up_patterns):
+        if re.search(pattern, text.strip()):
+            print(f"✅ DEBUG [is_follow_up_answer]: MATCHED pattern #{idx}: {pattern}")
             return True
+    print(f"❌ DEBUG [is_follow_up_answer]: NO PATTERN MATCHED")
     return False
 
 
 def parse_follow_up(text: str, user_type: str) -> Dict[str, str]:
     """Parse a follow-up answer and return appropriate intent."""
     text = text.strip().lower()
+    print(f"\n🟡 DEBUG [parse_follow_up]: Parsing text: '{text}'")
     
     # Preference answers
-    if text in ["cheapest", "cheap", "budget", "affordable"]:
+    if text in ["cheapest", "cheap", "budget", "affordable"] or "cheapest" in text:
+        print(f"🎯 DEBUG [parse_follow_up]: DETECTED CHEAPEST")
         return {
             "intent": "select_option",
             "choice": "cheapest",
             "destination": "Unknown",
             "origin": "current_location"
         }
-    elif text in ["fastest", "fast", "quick", "quickest"]:
+    elif text in ["fastest", "fast", "quick", "quickest"] or "fastest" in text:
+        print(f"🎯 DEBUG [parse_follow_up]: DETECTED FASTEST")
         return {
             "intent": "select_option",
             "choice": "fastest",
             "destination": "Unknown",
             "origin": "current_location"
         }
+    elif "door-to-door" in text or "door to door" in text:
+        print(f"🎯 DEBUG [parse_follow_up]: DETECTED DOOR-TO-DOOR")
+        return {
+            "intent": "select_option",
+            "choice": "door_to_door",
+            "destination": "Unknown",
+            "origin": "current_location"
+        }
     elif text in ["yes", "yeah", "yep", "sure", "ok", "okay"]:
+        print(f"🎯 DEBUG [parse_follow_up]: DETECTED YES")
         return {
             "intent": "confirm",
             "choice": "yes",
@@ -194,6 +236,7 @@ def parse_follow_up(text: str, user_type: str) -> Dict[str, str]:
             "origin": "current_location"
         }
     elif text in ["no", "nope", "nah"]:
+        print(f"🎯 DEBUG [parse_follow_up]: DETECTED NO")
         return {
             "intent": "confirm",
             "choice": "no",

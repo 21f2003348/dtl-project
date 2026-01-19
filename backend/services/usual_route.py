@@ -12,7 +12,10 @@ from pathlib import Path
 class UsualRouteManager:
     """Manages frequent/usual routes for quick access."""
     
-    def __init__(self, data_dir: str = "data"):
+    def __init__(self, data_dir: str = None):
+        if data_dir is None:
+            # Use absolute path relative to this file
+            data_dir = Path(__file__).parent.parent / "data"
         self.data_dir = Path(data_dir)
         self.usual_routes_file = self.data_dir / "usual_routes.json"
         self._ensure_file_exists()

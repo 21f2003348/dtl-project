@@ -30,82 +30,112 @@ def parse_kml_stops(file_path: str) -> List[Dict]:
         
         # Try with namespace first
         placemarks = root.findall('.//kml:Placemark', ns)
+        print(f"[KML Parser] Found {len(placemarks)} placemarks with namespace in {file_path}")
         
         # If no results, try without namespace (some KML files don't use it)
         if not placemarks:
             placemarks = root.findall('.//{http://www.opengis.net/kml/2.2}Placemark')
+            print(f"[KML Parser] Found {len(placemarks)} placemarks with full URI in {file_path}")
         
         # Also try plain XML path
         if not placemarks:
             placemarks = root.findall('.//Placemark')
+            print(f"[KML Parser] Found {len(placemarks)} placemarks without namespace in {file_path}")
         
-        for placemark in placemarks:
-            stop_data = _parse_placemark(placemark, ns)
+        parsed_count = 0
+        for i, placemark in enumerate(placemarks):
+            # Debug first placemark only
+            debug_first = (i == 0)
+            stop_data = _parse_placemark(placemark, ns, debug_first=debug_first)
             if stop_data:
                 stops.append(stop_data)
+                parsed_count += 1
+        
+        print(f"[KML Parser] Successfully parsed {parsed_count}/{len(placemarks)} placemarks from {file_path}")
                 
     except ET.ParseError as e:
         print(f"[KML Parser] Error parsing {file_path}: {e}")
     except FileNotFoundError:
         print(f"[KML Parser] File not found: {file_path}")
+    except Exception as e:
+        print(f"[KML Parser] Unexpected error parsing {file_path}: {e}")
         
     return stops
 
 
-def _parse_placemark(placemark: ET.Element, ns: dict) -> Optional[Dict]:
+def _parse_placemark(placemark: ET.Element, ns: dict, debug_first=False) -> Optional[Dict]:
     """Parse a single Placemark element."""
     
-    # Get name
-    name_elem = (
-        placemark.find('kml:name', ns) or 
-        placemark.find('{http://www.opengis.net/kml/2.2}name') or
-        placemark.find('name')
-    )
+    if debug_first:
+        print(f"[DEBUG] Starting _parse_placemark")
+    
+    # Get name - ElementTree.find() with namespace dict uses {namespace}tagname format
+    # NOT the kml:name prefix format
+    name_elem = placemark.find('{http://www.opengis.net/kml/2.2}name')
+    
+    if debug_first:
+        print(f"[DEBUG] name_elem={name_elem}")
+        if name_elem is not None:
+            print(f"[DEBUG] name_elem.text='{name_elem.text}'")
+    
     name = name_elem.text.strip() if name_elem is not None and name_elem.text else None
     
+    if debug_first:
+        print(f"[DEBUG] name after strip='{name}'")
+    
     if not name:
+        if debug_first:
+            print(f"[DEBUG] No name found")
         return None
     
-    # Get coordinates
-    coords_elem = (
-        placemark.find('.//kml:coordinates', ns) or
-        placemark.find('.//{http://www.opengis.net/kml/2.2}coordinates') or
-        placemark.find('.//coordinates')
-    )
+    if debug_first:
+        print(f"[DEBUG] Name: '{name}'")
+    
+    # Get coordinates using correct namespace format
+    coords_elem = placemark.find('.//{http://www.opengis.net/kml/2.2}coordinates')
     
     lat, lon = None, None
     if coords_elem is not None and coords_elem.text:
         coords_text = coords_elem.text.strip()
-        # KML format: lon,lat,alt
+        if debug_first:
+            print(f"[DEBUG] Coords text: '{coords_text}'")
+        # KML format: lon,lat,alt (or just lon,lat)
         parts = coords_text.split(',')
         if len(parts) >= 2:
             try:
                 lon = float(parts[0].strip())
                 lat = float(parts[1].strip())
-            except ValueError:
-                pass
+                if debug_first:
+                    print(f"[DEBUG] Parsed lat={lat}, lon={lon}")
+            except ValueError as e:
+                if debug_first:
+                    print(f"[DEBUG] ValueError parsing coords: {e}")
     
     if lat is None or lon is None:
+        if debug_first:
+            print(f"[DEBUG] Coords are None: lat={lat}, lon={lon}")
         return None
     
-    # Get description (may contain route info)
-    desc_elem = (
-        placemark.find('kml:description', ns) or
-        placemark.find('{http://www.opengis.net/kml/2.2}description') or
-        placemark.find('description')
-    )
+    # Get description
+    desc_elem = placemark.find('{http://www.opengis.net/kml/2.2}description')
     description = desc_elem.text.strip() if desc_elem is not None and desc_elem.text else ""
     
     # Try to extract route numbers from description
     routes = _extract_routes(description)
     
-    return {
+    result = {
         'name': name,
         'lat': lat,
         'lon': lon,
         'description': description,
-        'routes': routes
+        'routes': routes,
+        'mode': 'bus'  # Default to bus mode
     }
+    
+    if debug_first:
+        print(f"[DEBUG] Returning result with name='{name}'")
+    
+    return result
 
 
 def _extract_routes(description: str) -> List[str]:

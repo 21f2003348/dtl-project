@@ -8,3 +8,6 @@ pytest
 pytest-cov
 httpx
 aiohttp
+sqlalchemy
+passlib[bcrypt]
+python-jose[cryptography]

@@ -1,0 +1,1006 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Search History - Voice Travel Assistant</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #1e3a8a 0%, #2d5016 100%);
+        min-height: 100vh;
+        padding: 20px;
+        color: #333;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      header {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      header h1 {
+        color: #1e3a8a;
+        margin-bottom: 10px;
+        font-size: 28px;
+      }
+
+      header p {
+        color: #666;
+        font-size: 14px;
+      }
+
+      .controls {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .filter-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      select,
+      input[type="text"] {
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        background: white;
+      }
+
+      select:focus,
+      input[type="text"]:focus {
+        outline: none;
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+      }
+
+      .btn-primary {
+        background: #f59e0b;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #d97706;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+      }
+
+      .btn-secondary {
+        background: #e5e7eb;
+        color: #333;
+      }
+
+      .btn-secondary:hover {
+        background: #d1d5db;
+      }
+
+      .btn-danger {
+        background: #ef4444;
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background: #dc2626;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+
+      .stat-card h3 {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+
+      .stat-card .value {
+        color: #f59e0b;
+        font-size: 32px;
+        font-weight: bold;
+      }
+
+      .history-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .history-item {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        border-left: 4px solid #f59e0b;
+      }
+
+      .history-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+      }
+
+      .route-info {
+        flex: 1;
+      }
+
+      .route-info h3 {
+        color: #1e3a8a;
+        font-size: 18px;
+        margin-bottom: 5px;
+      }
+
+      .route-info p {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 3px;
+      }
+
+      .route-details {
+        display: flex;
+        gap: 20px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+      }
+
+      .detail {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #666;
+        font-size: 14px;
+      }
+
+      .detail-icon {
+        font-size: 16px;
+      }
+
+      .timestamp {
+        color: #999;
+        font-size: 12px;
+        margin-top: 5px;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .btn-small {
+        padding: 8px 12px;
+        font-size: 12px;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 12px;
+        color: #999;
+      }
+
+      .empty-state h2 {
+        color: #666;
+        margin-bottom: 10px;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 40px;
+        color: white;
+      }
+
+      .loading-spinner {
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid white;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .alert {
+        padding: 12px 16px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        display: none;
+      }
+
+      .alert.show {
+        display: block;
+      }
+
+      .alert-success {
+        background: #d1fae5;
+        color: #065f46;
+        border-left: 4px solid #10b981;
+      }
+
+      .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+        border-left: 4px solid #ef4444;
+      }
+
+      .alert-info {
+        background: #dbeafe;
+        color: #1e40af;
+        border-left: 4px solid #3b82f6;
+      }
+
+      .user-badge {
+        background: #f59e0b;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 30px;
+      }
+
+      .pagination button {
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .pagination button:hover {
+        background: #f59e0b;
+        color: white;
+        border-color: #f59e0b;
+      }
+
+      .pagination button.active {
+        background: #f59e0b;
+        color: white;
+        border-color: #f59e0b;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal.show {
+        display: flex;
+      }
+
+      .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .modal-header {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #1e3a8a;
+      }
+
+      .modal-body {
+        margin-bottom: 20px;
+        color: #666;
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <header>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+          "
+        >
+          <div>
+            <h1>🔍 Search History</h1>
+            <p>View and manage your past travel searches</p>
+          </div>
+          <div class="user-badge" id="userBadge" style="display: none">
+            <span id="userName">User</span>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+          <div class="filter-group">
+            <label for="userTypeFilter">Filter by User Type:</label>
+            <select id="userTypeFilter">
+              <option value="">All Types</option>
+              <option value="student">Student</option>
+              <option value="elderly">Elderly</option>
+              <option value="tourist">Tourist</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="daysFilter">Time Period:</label>
+            <select id="daysFilter">
+              <option value="7">Last 7 Days</option>
+              <option value="30">Last 30 Days</option>
+              <option value="90">Last 90 Days</option>
+              <option value="all">All Time</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary" onclick="loadHistory()">
+            🔄 Refresh
+          </button>
+          <button
+            class="btn btn-secondary"
+            onclick="window.location.href = 'itineraries.html'"
+          >
+            🗺️ Itineraries
+          </button>
+          <button class="btn btn-secondary" onclick="toggleLoginModal()">
+            👤 Login
+          </button>
+          <button
+            class="btn btn-danger"
+            onclick="clearAllHistory()"
+            style="margin-left: auto"
+          >
+            🗑️ Clear All
+          </button>
+        </div>
+      </header>
+
+      <!-- Alert Messages -->
+      <div id="alert" class="alert"></div>
+
+      <!-- Stats Section -->
+      <div class="stats" id="statsSection" style="display: none">
+        <div class="stat-card">
+          <h3>Total Searches</h3>
+          <div class="value" id="totalSearches">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Average Cost</h3>
+          <div class="value" id="avgCost">₹0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Most Used City</h3>
+          <div class="value" id="mostUsedCity">-</div>
+        </div>
+        <div class="stat-card">
+          <h3>Favorite Route</h3>
+          <div class="value" id="favoriteRoute">-</div>
+        </div>
+      </div>
+
+      <!-- History List -->
+      <div id="historyContainer"></div>
+
+      <!-- Pagination -->
+      <div class="pagination" id="pagination" style="display: none"></div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+      <div class="modal-content">
+        <div style="margin-bottom: 20px">
+          <button
+            onclick="toggleLoginModal()"
+            style="
+              float: right;
+              background: none;
+              border: none;
+              font-size: 20px;
+              cursor: pointer;
+            "
+          >
+            ✕
+          </button>
+          <div style="clear: both"></div>
+        </div>
+
+        <div id="loginForm">
+          <div class="modal-header">Login</div>
+          <div class="modal-body">
+            <input
+              type="text"
+              id="loginUsername"
+              placeholder="Username"
+              style="
+                width: 100%;
+                margin-bottom: 10px;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+              "
+            />
+            <input
+              type="password"
+              id="loginPassword"
+              placeholder="Password"
+              style="
+                width: 100%;
+                margin-bottom: 10px;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+              "
+            />
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="toggleLoginModal()">
+              Cancel
+            </button>
+            <button class="btn btn-primary" onclick="login()">Login</button>
+            <button class="btn btn-secondary" onclick="toggleRegisterForm()">
+              Register
+            </button>
+          </div>
+        </div>
+
+        <div id="registerForm" style="display: none">
+          <div class="modal-header">Register</div>
+          <div class="modal-body">
+            <input
+              type="text"
+              id="regUsername"
+              placeholder="Username"
+              style="
+                width: 100%;
+                margin-bottom: 10px;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+              "
+            />
+            <input
+              type="email"
+              id="regEmail"
+              placeholder="Email"
+              style="
+                width: 100%;
+                margin-bottom: 10px;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+              "
+            />
+            <input
+              type="password"
+              id="regPassword"
+              placeholder="Password"
+              style="
+                width: 100%;
+                margin-bottom: 10px;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+              "
+            />
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="toggleLoginModal()">
+              Cancel
+            </button>
+            <button class="btn btn-primary" onclick="register()">
+              Register
+            </button>
+            <button class="btn btn-secondary" onclick="toggleRegisterForm()">
+              Back to Login
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirm Delete Modal -->
+    <div class="modal" id="confirmModal">
+      <div class="modal-content">
+        <div class="modal-header">Confirm Delete</div>
+        <div class="modal-body" id="confirmMessage"></div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" onclick="closeConfirmModal()">
+            Cancel
+          </button>
+          <button class="btn btn-danger" onclick="confirmDelete()">
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentToken = localStorage.getItem("authToken");
+      let currentUser = localStorage.getItem("currentUser");
+      let allHistory = [];
+      let pendingDelete = null;
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", function () {
+        updateAuthUI();
+        if (currentToken) {
+          loadHistory();
+        } else {
+          showMessage("Please login to view your search history", "info");
+          showEmptyState(
+            "Login required",
+            "Please login or register to see your search history",
+          );
+        }
+      });
+
+      function updateAuthUI() {
+        const userBadge = document.getElementById("userBadge");
+        const loginBtn = document.querySelector(
+          '[onclick="toggleLoginModal()"]',
+        );
+
+        if (currentToken && currentUser) {
+          userBadge.style.display = "block";
+          document.getElementById("userName").textContent = `👤 ${currentUser}`;
+          loginBtn.textContent = "🚪 Logout";
+          loginBtn.onclick = logout;
+        } else {
+          userBadge.style.display = "none";
+          loginBtn.textContent = "👤 Login";
+          loginBtn.onclick = toggleLoginModal;
+        }
+      }
+
+      function toggleLoginModal() {
+        document.getElementById("loginModal").classList.toggle("show");
+        document.getElementById("loginForm").style.display = "block";
+        document.getElementById("registerForm").style.display = "none";
+      }
+
+      function toggleRegisterForm() {
+        const loginForm = document.getElementById("loginForm");
+        const registerForm = document.getElementById("registerForm");
+        loginForm.style.display =
+          loginForm.style.display === "none" ? "block" : "none";
+        registerForm.style.display =
+          registerForm.style.display === "none" ? "block" : "none";
+      }
+
+      async function login() {
+        const username = document.getElementById("loginUsername").value;
+        const password = document.getElementById("loginPassword").value;
+
+        if (!username || !password) {
+          showMessage("Please enter username and password", "error");
+          return;
+        }
+
+        try {
+          const response = await fetch("http://localhost:8000/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            currentToken = data.access_token;
+            currentUser = data.user.username;
+            localStorage.setItem("authToken", currentToken);
+            localStorage.setItem("currentUser", currentUser);
+            updateAuthUI();
+            document.getElementById("loginModal").classList.remove("show");
+            showMessage(`Welcome back, ${currentUser}!`, "success");
+            loadHistory();
+          } else {
+            showMessage(data.detail || "Login failed", "error");
+          }
+        } catch (error) {
+          showMessage("Error logging in: " + error.message, "error");
+        }
+      }
+
+      async function register() {
+        const username = document.getElementById("regUsername").value;
+        const email = document.getElementById("regEmail").value;
+        const password = document.getElementById("regPassword").value;
+
+        if (!username || !email || !password) {
+          showMessage("Please fill all fields", "error");
+          return;
+        }
+
+        try {
+          const response = await fetch("http://localhost:8000/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, email, password }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            currentToken = data.access_token;
+            currentUser = data.user.username;
+            localStorage.setItem("authToken", currentToken);
+            localStorage.setItem("currentUser", currentUser);
+            updateAuthUI();
+            document.getElementById("loginModal").classList.remove("show");
+            showMessage(`Welcome, ${currentUser}!`, "success");
+            loadHistory();
+          } else {
+            showMessage(data.detail || "Registration failed", "error");
+          }
+        } catch (error) {
+          showMessage("Error registering: " + error.message, "error");
+        }
+      }
+
+      function logout() {
+        currentToken = null;
+        currentUser = null;
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("currentUser");
+        updateAuthUI();
+        allHistory = [];
+        document.getElementById("historyContainer").innerHTML = "";
+        document.getElementById("statsSection").style.display = "none";
+        showMessage("Logged out successfully", "success");
+        showEmptyState(
+          "Logged Out",
+          "Please login or register to see your search history",
+        );
+      }
+
+      async function loadHistory() {
+        if (!currentToken) {
+          showMessage("Please login first", "info");
+          return;
+        }
+
+        const days =
+          document.getElementById("daysFilter").value === "all"
+            ? 365
+            : document.getElementById("daysFilter").value;
+
+        try {
+          const response = await fetch(
+            `http://localhost:8000/history/list?days=${days}`,
+            {
+              headers: {
+                Authorization: `Bearer ${currentToken}`,
+              },
+            },
+          );
+
+          if (!response.ok) {
+            if (response.status === 401) {
+              logout();
+              return;
+            }
+            throw new Error("Failed to fetch history");
+          }
+
+          const data = await response.json();
+          allHistory = data.searches || [];
+
+          // Apply user type filter
+          const userTypeFilter =
+            document.getElementById("userTypeFilter").value;
+          let filtered = allHistory;
+          if (userTypeFilter) {
+            filtered = allHistory.filter((s) => s.user_type === userTypeFilter);
+          }
+
+          if (filtered.length === 0) {
+            showEmptyState(
+              "No Searches Found",
+              "You haven't made any searches yet. Start by making a query!",
+            );
+            document.getElementById("statsSection").style.display = "none";
+          } else {
+            displayHistory(filtered);
+            updateStats(filtered);
+            document.getElementById("statsSection").style.display = "grid";
+          }
+        } catch (error) {
+          showMessage("Error loading history: " + error.message, "error");
+        }
+      }
+
+      function displayHistory(searches) {
+        const container = document.getElementById("historyContainer");
+
+        if (searches.length === 0) {
+          showEmptyState(
+            "No Searches",
+            "No search history found for the selected filters",
+          );
+          return;
+        }
+
+        container.innerHTML = searches
+          .map(
+            (search) => `
+                <div class="history-item">
+                    <div class="history-header">
+                        <div class="route-info">
+                            <h3>📍 ${search.origin} → ${search.destination}</h3>
+                            <p style="color: #999; font-size: 13px;">${search.city} • ${search.user_type.charAt(0).toUpperCase() + search.user_type.slice(1)}</p>
+                            
+                            <div class="route-details">
+                                <div class="detail">
+                                    <span class="detail-icon">💰</span>
+                                    <span>₹${search.total_cost || "N/A"}</span>
+                                </div>
+                                <div class="detail">
+                                    <span class="detail-icon">⏱️</span>
+                                    <span>${search.duration || "N/A"} mins</span>
+                                </div>
+                                ${
+                                  search.group_size > 1
+                                    ? `
+                                <div class="detail">
+                                    <span class="detail-icon">👥</span>
+                                    <span>${search.group_size} people</span>
+                                </div>
+                                `
+                                    : ""
+                                }
+                                ${
+                                  search.selected_option
+                                    ? `
+                                <div class="detail">
+                                    <span class="detail-icon">🎯</span>
+                                    <span>${search.selected_option}</span>
+                                </div>
+                                `
+                                    : ""
+                                }
+                            </div>
+                            
+                            <div class="timestamp">
+                                📅 ${new Date(search.created_at).toLocaleString()}
+                            </div>
+                        </div>
+                        
+                        <div class="actions">
+                            <button class="btn btn-primary btn-small" onclick="reuseSearch('${search.origin}', '${search.destination}')">🔁 Reuse</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteSearch(${search.id})">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            `,
+          )
+          .join("");
+      }
+
+      function updateStats(searches) {
+        const totalSearches = searches.length;
+        const totalCost = searches.reduce(
+          (sum, s) => sum + (s.total_cost || 0),
+          0,
+        );
+        const avgCost =
+          totalSearches > 0 ? Math.round(totalCost / totalSearches) : 0;
+
+        // Most used city
+        const cityCount = {};
+        searches.forEach((s) => {
+          cityCount[s.city] = (cityCount[s.city] || 0) + 1;
+        });
+        const mostUsedCity =
+          Object.keys(cityCount).length > 0
+            ? Object.keys(cityCount).reduce((a, b) =>
+                cityCount[a] > cityCount[b] ? a : b,
+              )
+            : "-";
+
+        // Favorite route (most repeated)
+        const routeCount = {};
+        searches.forEach((s) => {
+          const route = `${s.origin} → ${s.destination}`;
+          routeCount[route] = (routeCount[route] || 0) + 1;
+        });
+        const favoriteRoute =
+          Object.keys(routeCount).length > 0
+            ? Object.keys(routeCount).reduce((a, b) =>
+                routeCount[a] > routeCount[b] ? a : b,
+              )
+            : "-";
+
+        document.getElementById("totalSearches").textContent = totalSearches;
+        document.getElementById("avgCost").textContent = `₹${avgCost}`;
+        document.getElementById("mostUsedCity").textContent = mostUsedCity;
+        document.getElementById("favoriteRoute").textContent =
+          favoriteRoute.length > 30
+            ? favoriteRoute.substring(0, 30) + "..."
+            : favoriteRoute;
+      }
+
+      function reuseSearch(origin, destination) {
+        // Store in sessionStorage and redirect to main page
+        sessionStorage.setItem("reuseOrigin", origin);
+        sessionStorage.setItem("reuseDestination", destination);
+        window.location.href = "index.html";
+      }
+
+      function deleteSearch(searchId) {
+        pendingDelete = searchId;
+        document.getElementById("confirmMessage").textContent =
+          "Are you sure you want to delete this search from your history?";
+        document.getElementById("confirmModal").classList.add("show");
+      }
+
+      async function confirmDelete() {
+        if (!pendingDelete) return;
+
+        try {
+          const response = await fetch(
+            `http://localhost:8000/history/${pendingDelete}`,
+            {
+              method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${currentToken}`,
+              },
+            },
+          );
+
+          if (response.ok) {
+            showMessage("Search deleted successfully", "success");
+            closeConfirmModal();
+            loadHistory();
+          } else {
+            showMessage("Failed to delete search", "error");
+          }
+        } catch (error) {
+          showMessage("Error: " + error.message, "error");
+        }
+      }
+
+      function closeConfirmModal() {
+        document.getElementById("confirmModal").classList.remove("show");
+        pendingDelete = null;
+      }
+
+      async function clearAllHistory() {
+        if (
+          !confirm(
+            "Are you sure you want to delete ALL searches? This cannot be undone.",
+          )
+        ) {
+          return;
+        }
+
+        try {
+          const response = await fetch("http://localhost:8000/history/", {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${currentToken}`,
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            showMessage(data.message, "success");
+            allHistory = [];
+            document.getElementById("historyContainer").innerHTML = "";
+            document.getElementById("statsSection").style.display = "none";
+            showEmptyState(
+              "History Cleared",
+              "All your searches have been deleted",
+            );
+          } else {
+            showMessage("Failed to clear history", "error");
+          }
+        } catch (error) {
+          showMessage("Error: " + error.message, "error");
+        }
+      }
+
+      function showEmptyState(title, message) {
+        document.getElementById("historyContainer").innerHTML = `
+                <div class="empty-state">
+                    <h2>${title}</h2>
+                    <p>${message}</p>
+                </div>
+            `;
+      }
+
+      function showMessage(message, type) {
+        const alert = document.getElementById("alert");
+        alert.textContent = message;
+        alert.className = `alert alert-${type} show`;
+        setTimeout(() => {
+          alert.classList.remove("show");
+        }, 4000);
+      }
+
+      // Event listeners
+      document
+        .getElementById("userTypeFilter")
+        .addEventListener("change", loadHistory);
+      document
+        .getElementById("daysFilter")
+        .addEventListener("change", loadHistory);
+    </script>
+  </body>
+</html>
