@@ -92,7 +92,8 @@ class TouristAIPlanner:
         travel_style: str = "explorer",
         transport_preference: str = "flexible",
         budget_per_person: int = 3000,
-        num_people: int = 1
+        num_people: int = 1,
+        language: str = "en"
     ) -> Dict[str, Any]:
         """
         Generate AI-powered itinerary for tourist.
@@ -106,6 +107,7 @@ class TouristAIPlanner:
             transport_preference: Transport mode (public/cabs/flexible)
             budget_per_person: Daily budget per person in rupees
             num_people: Number of people in the group
+            language: Language code ("en", "hi", "kn")
         
         Returns:
             {
@@ -127,7 +129,8 @@ class TouristAIPlanner:
         
         prompt = self._build_itinerary_prompt(
             city, days, interests, budget, travel_style, 
-            transport_preference, budget_per_person, num_people
+            transport_preference, budget_per_person, num_people,
+            language
         )
         
         # Priority 1: Try OpenAI
@@ -153,10 +156,18 @@ class TouristAIPlanner:
     def _build_itinerary_prompt(
         self, city: str, days: int, interests: Optional[List[str]], 
         budget: str, style: str, transport_preference: str = "flexible",
-        budget_per_person: int = 3000, num_people: int = 1
+        budget_per_person: int = 3000, num_people: int = 1,
+        language: str = "en"
     ) -> str:
         """Build prompt for LLM."""
         interests_str = ", ".join(interests) if interests else "sightseeing, food, culture"
+        
+        # Language instruction
+        lang_instruction = "GENERATE CONTENT IN ENGLISH."
+        if language == "hi":
+            lang_instruction = "IMPORTANT: GENERATE THE ENTIRE CONTENT IN HINDI."
+        elif language == "kn":
+            lang_instruction = "IMPORTANT: GENERATE THE ENTIRE CONTENT IN KANNADA."
         
         # Build transport guidance
         transport_guidance = {
@@ -183,6 +194,7 @@ IMPORTANT: This itinerary is for ELDERLY travelers. Strict constraints:
         
         return f"""
 You are an expert tour guide. Create a {days}-day detailed itinerary for {city}.
+{lang_instruction}
 
 Group Details:
 - Number of People: {num_people}

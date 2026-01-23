@@ -122,6 +122,9 @@ class TouristItineraryRequest(BaseModel):
     elderly_travelers: bool = False  # Whether the group includes elderly travelers
     transport_preference: str = "flexible"  # "public", "cabs", or "flexible"
     budget_per_person: Optional[int] = 3000  # Budget per person per day in rupees
+    language: str = "en"  # "en", "hi", "kn"
+
+
 
 
 class TouristQuickTipRequest(BaseModel):
@@ -284,7 +287,8 @@ async def get_tourist_itinerary(
             travel_style="elderly" if payload.elderly_travelers else "explorer",
             transport_preference=payload.transport_preference,
             budget_per_person=payload.budget_per_person,
-            num_people=payload.num_people
+            num_people=payload.num_people,
+            language=payload.language
         )
     except ValueError as e:
         # AI services unavailable and city not supported for fallback

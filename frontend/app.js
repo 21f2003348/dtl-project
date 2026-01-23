@@ -341,6 +341,7 @@ window.TravelAssistant = {
   CONFIG,
   state,
   t,
+  loadTranslations,
   setLanguage,
   showToast,
   openModal,
@@ -349,6 +350,7 @@ window.TravelAssistant = {
   handleRegister,
   logout,
   checkAuthStatus,
+  init,
 };
 
 // ===========================

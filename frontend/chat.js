@@ -13,41 +13,59 @@ const chatState = {
   messages: [],
   userType: null,
   isProcessing: false,
+  initializationPromise: null, // Track initialization
 };
 
 // ===========================
 // Audio Recording
 // ===========================
-async function initializeAudioRecording() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    chatState.mediaRecorder = new MediaRecorder(stream, {
-      mimeType: "audio/webm;codecs=opus",
-    });
-
-    chatState.mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        chatState.audioChunks.push(event.data);
-      }
-    };
-
-    chatState.mediaRecorder.onstop = async () => {
-      const audioBlob = new Blob(chatState.audioChunks, { type: "audio/webm" });
-      chatState.audioChunks = [];
-      await processAudioRecording(audioBlob);
-    };
-
-    return true;
-  } catch (error) {
-    console.error("Microphone access denied:", error);
-    if (window.TravelAssistant) {
-      window.TravelAssistant.showToast(
-        window.TravelAssistant.t("microphonePermission"),
-        "error",
-      );
-    }
-    return false;
+function initializeAudioRecording() {
+  // Return existing promise if already initializing
+  if (chatState.initializationPromise) {
+    return chatState.initializationPromise;
   }
+
+  chatState.initializationPromise = (async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      chatState.mediaRecorder = new MediaRecorder(stream, {
+        mimeType: "audio/webm;codecs=opus",
+      });
+
+      chatState.mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chatState.audioChunks.push(event.data);
+        }
+      };
+
+      chatState.mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(chatState.audioChunks, { type: "audio/webm" });
+        chatState.audioChunks = [];
+        await processAudioRecording(audioBlob);
+      };
+
+      return true;
+    } catch (error) {
+      console.error("Microphone access denied:", error);
+      if (window.TravelAssistant) {
+        window.TravelAssistant.showToast(
+          window.TravelAssistant.t("microphonePermission"),
+          "error",
+        );
+      }
+      return false;
+    } finally {
+      // Keep the promise if successful? No, clear it so we can retry if it failed,
+      // OR keep it if successful so we don't init again? 
+      // Logic: if mediaRecorder is set, we don't need init. 
+      // If failed, we clear promise so we can retry.
+      if (!chatState.mediaRecorder) {
+        chatState.initializationPromise = null;
+      }
+    }
+  })();
+
+  return chatState.initializationPromise;
 }
 
 function startRecording() {
@@ -123,6 +141,9 @@ async function processAudioRecording(audioBlob) {
       if (chatInput) {
         chatInput.value = transcription.text;
       }
+
+      // Switch to text input view to show the preview
+      showTextInput();
 
       // Optionally auto-send
       // await sendMessage(transcription.text);
@@ -311,7 +332,8 @@ function addMessage(
 }
 
 function formatRouteResponse(data) {
-  const { origin, destination, cheapest, fastest, door_to_door } = data;
+  const { origin, destination, cheapest, fastest, door_to_door, most_comfortable } = data;
+  const t = (key) => window.TravelAssistant && window.TravelAssistant.t ? window.TravelAssistant.t(key) : key;
 
   const formatSteps = (steps) => {
     if (!steps || steps.length === 0) return "";
@@ -331,41 +353,52 @@ function formatRouteResponse(data) {
       .join("");
   };
 
-  const formatOption = (label, icon, option, optionKey) => {
+  const formatOption = (labelKey, icon, option, optionKey) => {
     if (!option) return "";
     const hasSteps = option.steps && option.steps.length > 0;
     const expandId = `expand-${optionKey}-${Date.now()}`;
+    // labelKey is now a translation key
+    const label = t(labelKey);
+
+    // For elderly/comfortable option, might have comfort score
+    const comfortBadge = option.comfort_score
+      ? `<span class="route-badge" style="background:#10b981; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.8em; margin-left:8px;">Comfort: ${option.comfort_score}/100</span>`
+      : "";
 
     return `
         <div class="route-option" data-option="${optionKey}">
             <div class="route-header">
                 <span class="route-icon">${icon}</span>
                 <div class="route-title-info">
-                    <h3>${label}</h3>
+                    <h3 style="display:flex; align-items:center;">${label} ${comfortBadge}</h3>
                     <span class="route-summary">${escapeHtml(option.mode)} • ₹${option.cost} • ${option.time} mins</span>
                 </div>
             </div>
             <div class="route-details">
                 <div class="detail-row">
-                    <span class="detail-label">Mode:</span>
+                    <span class="detail-label">${t("mode")}:</span>
                     <span class="detail-value">${escapeHtml(option.mode)}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">Cost:</span>
+                    <span class="detail-label">${t("cost")}:</span>
                     <span class="detail-value">₹${option.cost}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">Time:</span>
+                    <span class="detail-label">${t("time")}:</span>
                     <span class="detail-value">~${option.time} mins</span>
                 </div>
+                ${option.capacity_note ? `
+                <div class="detail-row">
+                    <span class="detail-label">${t("note")}:</span>
+                    <span class="detail-value">${escapeHtml(option.capacity_note)}</span>
+                </div>` : ''}
             </div>
-            ${
-              hasSteps
-                ? `
+            ${hasSteps
+        ? `
             <div class="route-directions">
                 <button class="expand-btn" onclick="toggleDirections('${expandId}')">
                     <span class="expand-icon">▼</span>
-                    <span class="expand-text">Show Detailed Directions</span>
+                    <span class="expand-text">${t("showDirections")}</span>
                 </button>
                 <div id="${expandId}" class="directions-content" style="display: none;">
                     <ol class="steps-list">
@@ -374,16 +407,36 @@ function formatRouteResponse(data) {
                 </div>
             </div>
             `
-                : ""
-            }
+        : ""
+      }
             <div class="route-action">
                 <button class="select-btn" onclick="selectRoute('${optionKey}', '${option.mode}', ${option.cost}, '${option.time}')">
-                    ✓ Select ${label.replace(/💰|⚡|🚗/g, "").trim()}
+                    ✓ ${t("select")} ${label.replace(/💰|⚡|🚗|🌟/g, "").trim()}
                 </button>
             </div>
         </div>
         `;
   };
+
+  // Build the options HTML based on what data is available
+  let optionsHtml = "";
+
+  if (most_comfortable) {
+    // Elderly / Comfort priority
+    optionsHtml += formatOption("mostPreferred", "🌟", most_comfortable, "most_comfortable");
+    // Only show cheapest if it's different from most_comfortable in terms of mode or cost
+    if (cheapest && (cheapest.mode !== most_comfortable.mode || cheapest.cost !== most_comfortable.cost)) {
+      optionsHtml += formatOption("cheapestOption", "💰", cheapest, "cheapest");
+    }
+  } else {
+    // Standard (Student/General)
+    if (cheapest) optionsHtml += formatOption("cheapestOption", "💰", cheapest, "cheapest");
+    if (fastest) optionsHtml += formatOption("fastestOption", "⚡", fastest, "fastest");
+    if (door_to_door && door_to_door.cost !== fastest.cost) {
+      optionsHtml += formatOption("doorToDoor", "🚗", door_to_door, "door-to-door");
+    }
+  }
+
 
   return `
     <div class="chat-message__avatar">🤖</div>
@@ -393,9 +446,7 @@ function formatRouteResponse(data) {
                 <h2>Route Plan: ${escapeHtml(origin)} → ${escapeHtml(destination)}</h2>
             </div>
             
-            ${formatOption("💰 CHEAPEST OPTION", "💰", cheapest, "cheapest")}
-            ${formatOption("⚡ FASTEST OPTION", "⚡", fastest, "fastest")}
-            ${door_to_door && door_to_door.cost !== fastest.cost ? formatOption("🚗 DOOR-TO-DOOR OPTION", "🚗", door_to_door, "door-to-door") : ""}
+            ${optionsHtml}
             
             <div class="route-footer">
                 <p>📲 Click "Show Detailed Directions" to see step-by-step navigation instructions</p>
@@ -548,7 +599,7 @@ async function sendMessage(text = null) {
     console.error("Send message error:", error);
     addMessage(
       window.TravelAssistant?.t("errorOccurred") ||
-        "Sorry, something went wrong. Please try again.",
+      "Sorry, something went wrong. Please try again.",
       false,
     );
   } finally {
