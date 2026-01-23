@@ -210,29 +210,15 @@
 
           <!-- City Selection -->
           <div class="form-group">
-            <label for="destinationSelect">📍 City/Destination</label>
-            <div class="destination-loader" id="destinationLoader" style="text-align: center; padding: 10px">
-              <p style="color: #999">Loading destinations...</p>
-            </div>
-            <select id="destinationSelect" class="form-input" style="display: none">
-              <option value="">Select a destination...</option>
-            </select>
-            <div id="destinationInfo" style="
-                  margin-top: 10px;
-                  padding: 10px;
-                  background: #f5f5f5;
-                  border-radius: 8px;
-                  display: none;
-                ">
-              <p id="destinationPlaces" style="margin: 0"></p>
-              <p id="destinationBestFor" style="margin: 5px 0 0 0; font-size: 0.9em; color: #666"></p>
-            </div>
+            <label for="destinationInput">📍 City/Destination</label>
+            <input type="text" id="destinationInput" class="form-input"
+              placeholder="Enter destination (e.g. Bengaluru, Mysore, Goa)" />
           </div>
 
           <!-- Number of People -->
           <div class="form-group">
             <label for="numPeople">👥 Number of People</label>
-            <input type="number" id="numPeople" class="form-input" min="1" max="20" value="2"
+            <input type="number" id="numPeople" class="form-input" min="1" max="50" value="2"
               placeholder="Enter number of people" />
           </div>
 
@@ -336,71 +322,6 @@
     // Tourist-specific initialization
     const API_BASE_URL = "http://127.0.0.1:8000";
 
-    async function loadDestinations() {
-      try {
-        console.log(
-          "Loading destinations from:",
-          `${API_BASE_URL}/tourist/destinations`,
-        );
-        const response = await fetch(`${API_BASE_URL}/tourist/destinations`);
-        const data = await response.json();
-
-        if (data.status === "success" && data.destinations) {
-          const select = document.getElementById("destinationSelect");
-          const loader = document.getElementById("destinationLoader");
-
-          // Clear loader
-          loader.style.display = "none";
-          select.style.display = "block";
-
-          // Populate destinations
-          data.destinations.forEach((dest) => {
-            const option = document.createElement("option");
-            option.value = dest.city_key;
-            option.textContent = `${dest.city}, ${dest.state}`;
-            option.dataset.name = dest.city;
-            option.dataset.places = dest.places_count;
-            option.dataset.popular = dest.popular_places.join(", ");
-            option.dataset.bestFor = dest.best_for.join(", ");
-            select.appendChild(option);
-          });
-
-          console.log(
-            "Destinations loaded successfully:",
-            data.destinations.length,
-          );
-          // Store destinations for later use
-          window.touristDestinations = data.destinations;
-        } else {
-          document.getElementById("destinationLoader").innerHTML =
-            '<p style="color: #e74c3c;">❌ Failed to load destinations. Please refresh.</p>';
-          console.error("Invalid response:", data);
-        }
-      } catch (error) {
-        console.error("Error loading destinations:", error);
-        document.getElementById("destinationLoader").innerHTML =
-          '<p style="color: #e74c3c;">⚠️ Error loading destinations. Server may be offline.</p>';
-      }
-    }
-
-    function setupDestinationSelect() {
-      const select = document.getElementById("destinationSelect");
-      const info = document.getElementById("destinationInfo");
-      const places = document.getElementById("destinationPlaces");
-      const bestFor = document.getElementById("destinationBestFor");
-
-      select.addEventListener("change", (e) => {
-        if (e.target.value) {
-          const option = e.target.selectedOptions[0];
-          places.textContent = `📍 ${option.dataset.places} famous places`;
-          bestFor.textContent = `Perfect for: ${option.dataset.bestFor}`;
-          info.style.display = "block";
-        } else {
-          info.style.display = "none";
-        }
-      });
-    }
-
     // Helper function to convert markdown-style text to HTML
     function convertMarkdownToHtml(text) {
       if (!text) return '';
@@ -421,21 +342,19 @@
     }
 
     async function generateItinerary() {
-      const select = document.getElementById("destinationSelect");
+      const destinationInput = document.getElementById("destinationInput"); // Changed ID
       const numPeople = document.getElementById("numPeople").value;
       const numDays = document.getElementById("numDays").value;
       const elderlyTravelers = document.getElementById("elderlyTravelers").checked;
       const transportPreference = document.getElementById("transportPreference").value;
       const budget = document.getElementById("budget").value;
 
-      if (!select.value) {
-        alert("Please select a destination");
+      const cityName = destinationInput.value.trim();
+
+      if (!cityName) {
+        alert("Please enter a destination");
         return;
       }
-
-      // Find destination city name
-      const option = select.selectedOptions[0];
-      const cityName = option.dataset.name;
 
       try {
         const generateBtn = document.getElementById("generateItineraryBtn");
@@ -494,9 +413,32 @@
                             <h3 style="margin-top: 0;">🗺️ ${data.city} Itinerary</h3>
                             <p><strong>👥 Travelers:</strong> ${data.num_people} people</p>
                             <p><strong>📅 Duration:</strong> ${data.days} days</p>
-                            <p style="margin-bottom: 0;"><strong>📍 Places to Visit:</strong> ${data.famous_places.length} attractions</p>
+                            <p style="margin-bottom: 0;"><strong>📍 Places to Visit:</strong> ${data.famous_places ? data.famous_places.length : 'Multiple'} attractions</p>
                         </div>
                     `;
+
+          // Add Travel Agencies section for Large Groups
+          if (data.itinerary.travel_agencies && data.itinerary.travel_agencies.length > 0) {
+            itineraryHTML += `
+                 <div style="margin-bottom: 15px; padding: 15px; background: rgba(59, 130, 246, 0.15); border-left: 4px solid #3b82f6; border-radius: 8px;">
+                    <h4 style="margin-top:0; color: #60a5fa;">🚌 Travel Agencies for Large Groups</h4>
+                    <p style="margin-bottom: 10px; color: #e0e7ff;">${data.itinerary.large_group_note || "Recommended agencies for group travel:"}</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+              `;
+
+            data.itinerary.travel_agencies.forEach(agency => {
+              itineraryHTML += `
+                    <div style="background: rgba(255,255,255,0.08); padding: 12px; border-radius: 6px;">
+                        <strong style="color: #60a5fa; display: block; font-size: 1.1em;">${agency.name}</strong>
+                        <div style="font-size: 0.95em; margin-top: 5px; color: #e0e7ff;">📞 ${agency.phone}</div>
+                        ${agency.website ? `<a href="${agency.website}" target="_blank" style="color: #93c5fd; font-size: 0.9em; display: inline-block; margin-top: 4px;">🌐 Visit Website</a>` : ''}
+                        <div style="font-size: 0.85em; color: #cbd5e1; margin-top: 8px;">${agency.services.join(", ")}</div>
+                    </div>
+                 `;
+            });
+
+            itineraryHTML += `</div></div>`;
+          }
 
           // Add daily plans if available
           if (
@@ -551,11 +493,6 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       console.log("Tourist page loaded");
-      // Load destinations on page load
-      loadDestinations();
-
-      // Setup destination selection
-      setTimeout(setupDestinationSelect, 500);
 
       // Setup generate button
       document
@@ -570,6 +507,7 @@
         });
       }
     });
+
   </script>
 </body>
 

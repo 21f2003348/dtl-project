@@ -19,6 +19,97 @@ from routes.auth_routes import get_user_id_from_token
 router = APIRouter(prefix="/tourist", tags=["tourist"])
 tourist_ai = TouristAIPlanner()  # Auto-selects best provider: OpenAI -> Gemini -> Fallback
 
+# ==================== Data ====================
+
+TRAVEL_AGENCIES = {
+    "bengaluru": [
+        {
+            "name": "Karnataka State Tourism Development Corporation (KSTDC)",
+            "phone": "080-4334 4334",
+            "website": "https://kstdc.co",
+            "services": ["Bus rental", "Tour packages", "Group bookings"]
+        },
+        {
+            "name": "Sharma Travels",
+            "phone": "080-2226 7890",
+            "services": ["Luxury buses", "Tempo traveller", "Mini vans"]
+        },
+        {
+            "name": "VRL Travels",
+            "phone": "080-23010101",
+            "website": "https://vrlbus.in",
+            "services": ["AC/Non-AC buses", "Sleeper coaches", "Corporate tours"]
+        },
+        {
+             "name": "SRS Travels",
+             "phone": "080-2680 1616",
+             "website": "https://srsbooking.com",
+             "services": ["Group tours", "Bus hire"]
+        }
+    ],
+    "mumbai": [
+        {
+            "name": "Maharashtra Tourism (MTDC)",
+            "phone": "022-2204 4040",
+            "website": "https://maharashtratourism.gov.in",
+            "services": ["Group tours", "Bus rentals"]
+        },
+        {
+            "name": "Neeta Travels",
+            "phone": "022-2888 8888",
+            "website": "https://neetabus.in",
+            "services": ["Luxury coaches", "Intercity buses"]
+        },
+        {
+            "name": "Purple Travels",
+            "phone": "022-2555 5555",
+            "services": ["Bus hire", "Corporate packages"]
+        }
+    ],
+    "mysore": [
+        {
+            "name": "KSTDC Mysore",
+            "phone": "0821-244 4444",
+            "services": ["City tours", "Bus rental"]
+        },
+        {
+            "name": "Safe Wheels",
+            "phone": "0821-255 5555",
+            "website": "https://safewheels.com",
+            "services": ["Tempo traveller", "Cars", "Buses"]
+        },
+        {
+             "name": "Seagull Travels",
+             "phone": "0821-233 3333",
+             "services": ["Group transport", "Local sightseeing"]
+        }
+    ],
+    "mysql": [ # Handling common typo/variant if needed, but mapped via key check
+         {
+            "name": "KSTDC Mysore",
+            "phone": "0821-244 4444",
+            "services": ["City tours", "Bus rental"]
+         }
+    ], 
+    "coorg": [
+        {
+            "name": "Coorg Cabs & Travels",
+            "phone": "08272-222 222",
+            "services": ["Tempo traveller", "Sightseeing packages"]
+        },
+        {
+            "name": "Cauvery Tours",
+            "phone": "08272-233 333",
+            "services": ["Group bookings", "Homestay + Travel"]
+        },
+        {
+            "name": "Yellow Cabs Coorg",
+            "phone": "08272-244 444",
+            "services": ["Local transport", "Outstation"]
+        }
+    ]
+}
+
 
 # ==================== Request Models ====================
 
@@ -147,20 +238,22 @@ async def get_tourist_itinerary(
     print(f"[ITINERARY] Preferences - elderly={payload.elderly_travelers}, transport={payload.transport_preference}, budget=₹{payload.budget_per_person}/person")
     print(f"[ITINERARY] Authorization header: {'Present' if authorization else 'Missing'}")
     
+    # Detect large group
+    is_large_group = payload.num_people > 15
+    travel_agencies = []
+    
+    if is_large_group:
+        city_lower = payload.city.lower()
+        for key, agencies in TRAVEL_AGENCIES.items():
+            if key in city_lower:
+                travel_agencies = agencies
+                break
+
     # Auto-detect famous places for the city
     famous_places = _get_famous_places(payload.city)
     
-    # If city not found, return available destinations
-    if not famous_places:
-        # Get available destinations
-        available_cities = ["Bengaluru", "Mysore", "Coorg", "Hampi", "Gokarna"]
-        return {
-            "status": "error",
-            "message": f"No itinerary data available for '{payload.city}'",
-            "available_destinations": available_cities,
-            "suggestion": f"Please select from: {', '.join(available_cities)}",
-            "note": "Use GET /tourist/destinations to see detailed information about each city"
-        }
+    # NOTE: We no longer return error for unknown cities to support Free Text Input
+    # if not famous_places: ... (removed)
     
     # Auto-set interests based on city
     auto_interests = _detect_city_interests(payload.city)
@@ -207,9 +300,37 @@ async def get_tourist_itinerary(
             famous_places, 
             payload.days or 1, 
             payload.city,
-            payload.num_people
+            payload.num_people,
+            include_transit=not is_large_group # Skip transit for large groups
         )
         itinerary["daily_plan"] = detailed_itinerary
+    else:
+        # For unknown cities, format AI response for frontend
+        # Convert AI days object to detailed_instructions format expected by frontend
+        if "days" in itinerary:
+            formatted_days = []
+            for day in itinerary["days"]:
+                # Helper to convert dict to string if needed
+                def fmt_section(sec):
+                    if isinstance(sec, dict):
+                        return f"**{sec.get('place', 'Activity')}**\n{sec.get('description', '')}\nTime: {sec.get('time', '')}"
+                    return str(sec)
+
+                formatted_days.append({
+                    "day": day.get("day", 1),
+                    "theme": day.get("theme", "Exploring"),
+                    "morning": fmt_section(day.get("morning", {})),
+                    "afternoon": fmt_section(day.get("afternoon", {})),
+                    "evening": fmt_section(day.get("evening", {})),
+                    "estimated_budget": "Variable",
+                    "tips": ["Explore locally", "Check safety"]
+                })
+            itinerary["daily_plan"] = formatted_days
+
+    # Add travel agencies to response if applicable
+    if travel_agencies:
+        itinerary["travel_agencies"] = travel_agencies
+        itinerary["large_group_note"] = "For groups larger than 15 people, we recommend booking a bus/traveller. Contact the agencies listed above."
     
     # Auto-save itinerary if user is logged in
     if authorization:
@@ -530,7 +651,7 @@ def _optimize_place_order(places: List[Dict[str, Any]], city: str) -> List[str]:
     return morning_places + afternoon_places
 
 
-def _generate_detailed_itinerary(places: List[Dict[str, Any]], days: int, city: str, num_people: int) -> List[Dict[str, Any]]:
+def _generate_detailed_itinerary(places: List[Dict[str, Any]], days: int, city: str, num_people: int, include_transit: bool = True) -> List[Dict[str, Any]]:
     """Generate detailed day-by-day itinerary with step-by-step instructions and transit routes."""
     daily_plans = []
     
@@ -570,10 +691,17 @@ def _generate_detailed_itinerary(places: List[Dict[str, Any]], days: int, city: 
                     f"📍 **{place_name}** ({place_type.title()})",
                     f"⏰ Time: {time_slot}",
                     f"💰 Entry: {entry_fee}",
-                    f"⌛ Duration: {time_needed}",
-                    "",
-                    "**🚌 How to Reach:**",
-                    route_text,
+                    f"⌛ Duration: {time_needed}"
+                ]
+                
+                if include_transit:
+                    morning_instruction.extend([
+                        "",
+                        "**🚌 How to Reach:**",
+                        route_text
+                    ])
+                    
+                morning_instruction.extend([
                     "",
                     "**Step-by-Step:**",
                     f"1. 🌅 Start your day early at {place_name}",
@@ -581,7 +709,7 @@ def _generate_detailed_itinerary(places: List[Dict[str, Any]], days: int, city: 
                     f"3. 🚶 Explore for {time_needed}",
                     f"4. 📸 Don't forget to take photos!",
                     f"5. 🚗 Move to next destination"
-                ]
+                ])
             elif i == 1:  # Second place - afternoon
                 time_slot = "12:00 PM - 3:00 PM"
                 route_text = _format_transit_route(transit_info, place_name, num_people, "afternoon")
@@ -589,10 +717,17 @@ def _generate_detailed_itinerary(places: List[Dict[str, Any]], days: int, city: 
                     f"📍 **{place_name}** ({place_type.title()})",
                     f"⏰ Time: {time_slot}",
                     f"💰 Entry: {entry_fee}",
-                    f"⌛ Duration: {time_needed}",
-                    "",
-                    "**🚌 How to Reach:**",
-                    route_text,
+                    f"⌛ Duration: {time_needed}"
+                ]
+                
+                if include_transit:
+                    afternoon_instruction.extend([
+                        "",
+                        "**🚌 How to Reach:**",
+                        route_text
+                    ])
+                    
+                afternoon_instruction.extend([
                     "",
                     "**Step-by-Step:**",
                     f"1. 🍽️ Have lunch nearby (budget: ₹{200 * num_people} for {num_people} {'person' if num_people == 1 else 'people'})",
@@ -600,7 +735,7 @@ def _generate_detailed_itinerary(places: List[Dict[str, Any]], days: int, city: 
                     f"3. 🎫 Entry: {entry_fee}",
                     f"4. 🔍 Explore for {time_needed}",
                     f"5. 💧 Stay hydrated - carry water"
-                ]
+                ])
             else:  # Third place - evening
                 time_slot = "4:00 PM - 7:00 PM"
                 route_text = _format_transit_route(transit_info, place_name, num_people, "evening")
@@ -608,10 +743,17 @@ def _generate_detailed_itinerary(places: List[Dict[str, Any]], days: int, city: 
                     f"📍 **{place_name}** ({place_type.title()})",
                     f"⏰ Time: {time_slot}",
                     f"💰 Entry: {entry_fee}",
-                    f"⌛ Duration: {time_needed}",
-                    "",
-                    "**🚌 How to Reach:**",
-                    route_text,
+                    f"⌛ Duration: {time_needed}"
+                ]
+                
+                if include_transit:
+                    evening_instruction.extend([
+                        "",
+                        "**🚌 How to Reach:**",
+                        route_text
+                    ])
+                    
+                evening_instruction.extend([
                     "",
                     "**Step-by-Step:**",
                     f"1. 🌆 Visit {place_name} in the evening",
@@ -619,7 +761,7 @@ def _generate_detailed_itinerary(places: List[Dict[str, Any]], days: int, city: 
                     f"3. 👀 Spend {time_needed} exploring",
                     f"4. 🍕 Dinner nearby (budget: ₹{300 * num_people} for {num_people} {'person' if num_people == 1 else 'people'})",
                     f"5. 🏨 Return to hotel/accommodation"
-                ]
+                ])
         
         # Calculate estimated daily cost
         total_entry_fees = sum([
