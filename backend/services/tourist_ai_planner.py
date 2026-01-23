@@ -169,14 +169,14 @@ class TouristAIPlanner:
         elderly_note = ""
         if style == "elderly":
             elderly_note = """
-IMPORTANT: This itinerary is for elderly travelers. Please ensure:
-- Minimal walking distances between attractions
-- Frequent rest breaks and comfortable seating areas
-- Accessible locations (wheelchair/mobility-friendly)
-- Avoid stairs or steep climbs where possible
-- Slower-paced activities
-- Nearby medical facilities mentioned
-- Comfortable transport options
+IMPORTANT: This itinerary is for ELDERLY travelers. Strict constraints:
+- NO adventure sports, trekking, or high-risk activities.
+- NO steep climbs, uneven terrain, or long walks.
+- Prioritize accessible, flat, and comfortable locations.
+- Include frequent rest breaks and comfortable seating.
+- Focus on cultural, scenic, and relaxing experiences.
+- Ensure easy access to restrooms and medical facilities.
+- Transport must be comfortable (AC cabs preferred).
 """
         
         total_budget = budget_per_person * num_people
@@ -263,12 +263,19 @@ CRITICAL: Stay within the budget of ₹{budget_per_person} per person per day. I
     def _query_gemini(self, prompt: str) -> Dict[str, Any]:
         """Query Google Gemini API."""
         if not self.gemini_key:
+            print("[GEMINI] No API key configured")
             return {}
         
         try:
-            # Using Gemini 2.5 Flash (free tier, better availability)
+            # Using Gemini 2.5 Flash (free tier check)
+            api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.gemini_key}"
+            print(f"[GEMINI] Calling API with model: gemini-2.5-flash")
+            
+            # Append instruction for concise JSON
+            prompt += "\n\nCRITICAL: Keep descriptions SHORT (max 15 words). output valid JSON only."
+            
             response = requests.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.gemini_key}",
+                api_url,
                 headers={"Content-Type": "application/json"},
                 json={
                     "contents": [{
@@ -276,27 +283,48 @@ CRITICAL: Stay within the budget of ₹{budget_per_person} per person per day. I
                     }],
                     "generationConfig": {
                         "temperature": 0.7,
-                        "maxOutputTokens": 2000,
+                        "maxOutputTokens": 8000,
+                        "response_mime_type": "application/json"
                     }
                 },
-                timeout=30
+                timeout=60
             )
+            
+            print(f"[GEMINI] Response status: {response.status_code}")
             
             if response.status_code == 200:
                 data = response.json()
                 if "candidates" in data and len(data["candidates"]) > 0:
-                    content = data["candidates"][0]["content"]["parts"][0]["text"]
-                    # Extract JSON from response
-                    import re
-                    json_match = re.search(r'\{.*\}', content, re.DOTALL)
-                    if json_match:
-                        parsed = json.loads(json_match.group())
-                        if parsed.get("days"):  # Verify it has actual content
-                            return parsed
+                    candidate = data["candidates"][0]
+                    finish_reason = candidate.get("finishReason", "UNKNOWN")
+                    print(f"[GEMINI] Finish reason: {finish_reason}")
+                    
+                    if "content" in candidate:
+                        content = candidate["content"]["parts"][0]["text"]
+                        print(f"[GEMINI] Received response, length: {len(content)} chars")
+                        
+                        # Clean up markdown if present
+                        clean_content = content.replace("```json", "").replace("```", "").strip()
+                        
+                        try:
+                            parsed = json.loads(clean_content)
+                            if parsed.get("days"):
+                                print(f"[GEMINI] Successfully parsed itinerary with {len(parsed['days'])} days")
+                                return parsed
+                            else:
+                                print(f"[GEMINI] Parsed JSON but no 'days' key found.")
+                        except json.JSONDecodeError as je:
+                            print(f"[GEMINI] JSON parse error: {je}")
+                            print(f"[GEMINI] Raw content end: ...{content[-200:]}")
+                    else:
+                        print(f"[GEMINI] No content in candidate. Blocked? {candidate.get('safetyRatings')}")
+                else:
+                    print(f"[GEMINI] No candidates in response: {data}")
             else:
-                print(f"[GEMINI] API error: {response.status_code} - {response.text}")
+                print(f"[GEMINI] API error: {response.status_code}")
+                print(f"[GEMINI] Error response: {response.text[:500]}")
         except Exception as e:
-            print(f"[GEMINI] Error: {e}")
+            print(f"[GEMINI] Unexpected error: {type(e).__name__}: {e}")
         
         return {}
     
