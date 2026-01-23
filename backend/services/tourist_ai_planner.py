@@ -130,29 +130,162 @@ class TouristAIPlanner:
         prompt = self._build_itinerary_prompt(
             city, days, interests, budget, travel_style, 
             transport_preference, budget_per_person, num_people,
-            language
+            language="en"
         )
+        
+        result = {}
         
         # Priority 1: Try OpenAI
         if self.primary_provider == "openai" or (self.openai_key and self.primary_provider == "fallback"):
             result = self._query_openai(prompt)
             if result and result.get("days"):
                 print(f"[AI PLANNER] ✓ Generated itinerary using OpenAI")
-                return result
-            print(f"[AI PLANNER] ✗ OpenAI failed, trying fallback...")
         
-        # Priority 2: Try Gemini
-        if self.primary_provider == "gemini" or (self.gemini_key and self.primary_provider == "fallback"):
+        # Priority 2: Try Gemini (if OpenAI failed or was skipped)
+        if not result and (self.primary_provider == "gemini" or (self.gemini_key and self.primary_provider == "fallback")):
             result = self._query_gemini(prompt)
             if result and result.get("days"):
                 print(f"[AI PLANNER] ✓ Generated itinerary using Gemini")
-                return result
-            print(f"[AI PLANNER] ✗ Gemini failed, trying fallback...")
         
-        # Priority 3: Hardcoded fallback (Bengaluru only)
-        return self._generate_fallback(city, days, interests, budget)
+        # Priority 3: Hardcoded fallback (if AI failed)
+        if not result:
+            print(f"[AI PLANNER] ✗ AI providers failed/unavailable, using fallback...")
+            # Note: Fallback raises ValueError for non-Bengaluru cities
+            result = self._generate_fallback(city, days, interests, budget)
+
+        # Post-processing: Translate logic moved to route level
+        # if language and language != "en":
+        #    result = self.translate_itinerary(result, language)
+            
+        return result
+        
     
-    
+    def translate_itinerary(self, itinerary: Dict[str, Any], target_language: str) -> Dict[str, Any]:
+        """
+        Translate the itinerary using Sarvam AI.
+        """
+        print(f"[AI PLANNER] Translating itinerary to {target_language} using Sarvam AI...")
+        from services.translation_service import translate_batch
+        
+        # Collect all texts to translate to minimize API calls
+        texts_to_translate = []
+        original_to_keys = [] # List of (text, context_key_string)
+        
+        # Helper to add text for translation
+        def add_text(text, context_key):
+            if text and isinstance(text, str) and text.strip():
+                # Avoid duplicates to save API calls, but need to track all occurrences for reconstruction
+                # Actually, duplicate texts are fine, we map by text value
+                texts_to_translate.append(text)
+                original_to_keys.append((text, context_key))
+        
+        # 1. Walk through the itinerary and collect texts
+        add_text(itinerary.get("title"), "title")
+        add_text(itinerary.get("note"), "note")
+        add_text(itinerary.get("safety_tips"), "safety_tips")
+        
+        # Packing tips
+        for i, tip in enumerate(itinerary.get("packing_tips", [])):
+            add_text(tip, f"packing_tips_{i}")
+            
+        # Days (Original AI output structure)
+        for day_idx, day in enumerate(itinerary.get("days", [])):
+            add_text(day.get("theme"), f"days_{day_idx}_theme")
+            add_text(day.get("transport_tip"), f"days_{day_idx}_transport")
+            
+            for section in ["morning", "afternoon", "evening"]:
+                if section in day:
+                    if isinstance(day[section], dict):
+                        add_text(day[section].get("description"), f"days_{day_idx}_{section}_desc")
+                        add_text(day[section].get("place"), f"days_{day_idx}_{section}_place")
+                    elif isinstance(day[section], str):
+                         add_text(day[section], f"days_{day_idx}_{section}_str")
+            
+            # Meals
+            if "meals" in day:
+                for meal_type, meal_text in day["meals"].items():
+                     add_text(meal_text, f"days_{day_idx}_meal_{meal_type}")
+
+        # Daily Plan (Frontend structure - flattened strings)
+        for day_idx, day in enumerate(itinerary.get("daily_plan", [])):
+            add_text(day.get("theme"), f"dailyplan_{day_idx}_theme")
+            # Sections in daily_plan are typically Markdown strings
+            for section in ["morning", "afternoon", "evening"]:
+                add_text(day.get(section), f"dailyplan_{day_idx}_{section}")
+            
+            # Tips in daily_plan are list of strings
+            for i, tip in enumerate(day.get("tips", [])):
+                add_text(tip, f"dailyplan_{day_idx}_tip_{i}")
+
+
+        # 2. Batch translate
+        if not texts_to_translate:
+            return itinerary
+            
+        # Deduplicate texts for API call
+        unique_texts = list(set(texts_to_translate))
+        translated_map = {}
+        batch_size = 50
+        
+        print(f"[AI PLANNER] Unique texts to translate: {len(unique_texts)}")
+        
+        for i in range(0, len(unique_texts), batch_size):
+            batch = unique_texts[i:i+batch_size]
+            print(f"[AI PLANNER] Translating batch {i//batch_size + 1}, size {len(batch)}")
+            
+            results = translate_batch(batch, source_language="en-IN", target_language=target_language)
+            
+            for j, res in enumerate(results):
+                original_text = batch[j]
+                translated_map[original_text] = res.get("translated_text", original_text)
+        
+        # 3. Reconstruct itinerary with translated values
+        import copy
+        new_itinerary = copy.deepcopy(itinerary)
+        
+        def get_trans(text):
+            return translated_map.get(text, text)
+            
+        if "title" in new_itinerary: new_itinerary["title"] = get_trans(new_itinerary["title"])
+        if "note" in new_itinerary: new_itinerary["note"] = get_trans(new_itinerary["note"])
+        if "safety_tips" in new_itinerary: new_itinerary["safety_tips"] = get_trans(new_itinerary["safety_tips"])
+        
+        if "packing_tips" in new_itinerary:
+            new_itinerary["packing_tips"] = [get_trans(tip) for tip in new_itinerary["packing_tips"]]
+            
+        # Reconstruct Days
+        for day in new_itinerary.get("days", []):
+            if "theme" in day: day["theme"] = get_trans(day["theme"])
+            if "transport_tip" in day: day["transport_tip"] = get_trans(day["transport_tip"])
+            
+            for section in ["morning", "afternoon", "evening"]:
+                if section in day:
+                    if isinstance(day[section], dict):
+                        if "description" in day[section]:
+                            day[section]["description"] = get_trans(day[section]["description"])
+                        if "place" in day[section]:
+                            day[section]["place"] = get_trans(day[section]["place"])
+                    elif isinstance(day[section], str):
+                        day[section] = get_trans(day[section])
+            
+            if "meals" in day:
+                for meal_type in day["meals"]:
+                    day["meals"][meal_type] = get_trans(day["meals"][meal_type])
+        
+        # Reconstruct Daily Plan
+        for day in new_itinerary.get("daily_plan", []):
+             if "theme" in day: day["theme"] = get_trans(day["theme"])
+             
+             for section in ["morning", "afternoon", "evening"]:
+                 if section in day:
+                     day[section] = get_trans(day[section])
+                     
+             if "tips" in day:
+                 day["tips"] = [get_trans(tip) for tip in day["tips"]]
+                    
+        return new_itinerary
+
+
     def _build_itinerary_prompt(
         self, city: str, days: int, interests: Optional[List[str]], 
         budget: str, style: str, transport_preference: str = "flexible",
@@ -162,12 +295,8 @@ class TouristAIPlanner:
         """Build prompt for LLM."""
         interests_str = ", ".join(interests) if interests else "sightseeing, food, culture"
         
-        # Language instruction
+        # Always generate in English for better consistency, then translate
         lang_instruction = "GENERATE CONTENT IN ENGLISH."
-        if language == "hi":
-            lang_instruction = "IMPORTANT: GENERATE THE ENTIRE CONTENT IN HINDI."
-        elif language == "kn":
-            lang_instruction = "IMPORTANT: GENERATE THE ENTIRE CONTENT IN KANNADA."
         
         # Build transport guidance
         transport_guidance = {

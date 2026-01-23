@@ -377,6 +377,14 @@ async def get_tourist_itinerary(
             traceback.print_exc()
             itinerary["saved"] = False
     
+    # Final step: Translate the ENTIRE itinerary (including enriched daily_plan) if needed
+    if payload.language and payload.language != "en":
+        try:
+            itinerary = tourist_ai.translate_itinerary(itinerary, payload.language)
+        except Exception as e:
+            print(f"[TRANSLATION] Failed to translate: {e}")
+            # Continue with English itinerary on failure
+    
     return {
         "status": "success",
         "city": payload.city,

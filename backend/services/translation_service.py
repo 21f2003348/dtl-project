@@ -80,8 +80,8 @@ def translate_text(
     api_key = get_sarvam_api_key()
     
     if not api_key:
-        print("[TRANSLATION] No SARVAM_API_KEY found, using fallback")
-        return _fallback_translation(text, source_language, target_language)
+        print("[TRANSLATION] No SARVAM_API_KEY found in environment variables")
+        return _fallback_translation(text, source_language, target_language, error="Missing API Key")
     
     try:
         headers = {
@@ -93,19 +93,25 @@ def translate_text(
             "input": text,
             "source_language_code": src_code,
             "target_language_code": tgt_code,
-            "model": "sarvam-translate:v1"
+            "model": "sarvam-translate:v1" 
         }
+        
+        print(f"[TRANSLATION] Request to {SARVAM_API_URL}")
+        print(f"[TRANSLATION] Payload: source={src_code}, target={tgt_code}, text_len={len(text)}")
         
         response = requests.post(
             SARVAM_API_URL,
             headers=headers,
             json=payload,
-            timeout=15
+            timeout=30 
         )
+        
+        print(f"[TRANSLATION] Response Status: {response.status_code}")
         
         if response.status_code == 200:
             result = response.json()
             translated = result.get("translated_text", text)
+            print(f"[TRANSLATION] Success! Translated len: {len(translated)}")
             
             return {
                 "translated_text": translated,
@@ -115,10 +121,10 @@ def translate_text(
             }
         else:
             print(f"[TRANSLATION] API error: {response.status_code} - {response.text}")
-            return _fallback_translation(text, source_language, target_language, error=response.text)
+            return _fallback_translation(text, source_language, target_language, error=f"API Error {response.status_code}: {response.text}")
             
     except requests.RequestException as e:
-        print(f"[TRANSLATION] Request error: {e}")
+        print(f"[TRANSLATION] Request Exception: {e}")
         return _fallback_translation(text, source_language, target_language, error=str(e))
     except Exception as e:
         print(f"[TRANSLATION] Unexpected error: {e}")
