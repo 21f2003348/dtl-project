@@ -4,11 +4,24 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+# CRITICAL: Load .env BEFORE importing routes that need API keys
 try:
-	from dotenv import load_dotenv
+    from dotenv import load_dotenv
+    env_path = Path(__file__).parent / ".env"
+    if not env_path.exists():
+        env_path = Path(__file__).parent.parent / ".env"
+    print(f"[STARTUP] Loading .env from: {env_path} (exists: {env_path.exists()})")
+    load_dotenv(dotenv_path=env_path, override=True)
+    import os
+    openai_key = os.getenv("OPENAI_API_KEY")
+    gemini_key = os.getenv("GEMINI_API_KEY")
+    print(f"[STARTUP] OPENAI_API_KEY loaded: {'Yes' if openai_key else 'No'} (length: {len(openai_key) if openai_key else 0})")
+    print(f"[STARTUP] GEMINI_API_KEY loaded: {'Yes' if gemini_key else 'No'} (length: {len(gemini_key) if gemini_key else 0})")
 except ImportError:
-	load_dotenv = None
+    print("[STARTUP] python-dotenv not installed, cannot load .env")
+    load_dotenv = None
 
+# Now import routes (TouristAIPlanner will see the API keys)
 from routes.text_query import router as text_query_router
 from routes.tourist_routes import router as tourist_router
 from routes.transit_routes import router as transit_router
@@ -25,22 +38,10 @@ from database import init_db
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 	# Startup
-	import os
+	print("[STARTUP] Initializing application...")
 	
 	# Initialize database
 	init_db()
-	
-	if load_dotenv:
-		# Load from project root or backend dir
-		env_path = Path(__file__).parent.parent / ".env"
-		if not env_path.exists():
-			env_path = Path(__file__).parent / ".env"
-		print(f"[STARTUP] Loading .env from: {env_path} (exists: {env_path.exists()})")
-		load_dotenv(dotenv_path=env_path, override=True)
-		token = os.getenv("TOKEN")
-		print(f"[STARTUP] TOKEN loaded: {'Yes' if token else 'No'} (length: {len(token) if token else 0})")
-	else:
-		print("[STARTUP] python-dotenv not installed, cannot load .env")
 	
 	base_path = Path(__file__).parent
 	store = StaticDataStore(base_path)

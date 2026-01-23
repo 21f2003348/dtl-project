@@ -17,17 +17,20 @@ from routes.auth_routes import get_user_id_from_token
 
 
 router = APIRouter(prefix="/tourist", tags=["tourist"])
-tourist_ai = TouristAIPlanner(api_type="ollama")  # Uses open-source Ollama by default
+tourist_ai = TouristAIPlanner()  # Auto-selects best provider: OpenAI -> Gemini -> Fallback
 
 
 # ==================== Request Models ====================
 
 class TouristItineraryRequest(BaseModel):
-    """Request for AI-generated itinerary - simplified to essentials only."""
+    """Request for AI-generated itinerary with detailed preferences."""
     city: str = "Bengaluru"  # City or area name (e.g., "Mysore", "Bengaluru")
     num_people: int = 1  # Number of tourists in the group
     days: Optional[int] = 1  # Optional: number of days (default 1-day plan)
     interests: Optional[List[str]] = None  # Optional: auto-detected from city
+    elderly_travelers: bool = False  # Whether the group includes elderly travelers
+    transport_preference: str = "flexible"  # "public", "cabs", or "flexible"
+    budget_per_person: Optional[int] = 3000  # Budget per person per day in rupees
 
 
 class TouristQuickTipRequest(BaseModel):
@@ -141,6 +144,7 @@ async def get_tourist_itinerary(
     """
     
     print(f"[ITINERARY] Request received - city={payload.city}, people={payload.num_people}, days={payload.days}")
+    print(f"[ITINERARY] Preferences - elderly={payload.elderly_travelers}, transport={payload.transport_preference}, budget=₹{payload.budget_per_person}/person")
     print(f"[ITINERARY] Authorization header: {'Present' if authorization else 'Missing'}")
     
     # Auto-detect famous places for the city
@@ -161,14 +165,37 @@ async def get_tourist_itinerary(
     # Auto-set interests based on city
     auto_interests = _detect_city_interests(payload.city)
     
-    # Generate itinerary with famous places
-    itinerary = tourist_ai.generate_itinerary(
-        city=payload.city,
-        days=payload.days or 1,
-        interests=auto_interests,
-        budget="moderate",  # Default moderate budget
-        travel_style="explorer"  # Default explorer style
-    )
+    # Determine budget level from numeric budget
+    if payload.budget_per_person:
+        if payload.budget_per_person < 2000:
+            budget_level = "budget"
+        elif payload.budget_per_person > 5000:
+            budget_level = "luxury"
+        else:
+            budget_level = "moderate"
+    else:
+        budget_level = "moderate"
+    
+    # Generate itinerary with famous places and new preferences
+    try:
+        itinerary = tourist_ai.generate_itinerary(
+            city=payload.city,
+            days=payload.days or 1,
+            interests=auto_interests,
+            budget=budget_level,
+            travel_style="elderly" if payload.elderly_travelers else "explorer",
+            transport_preference=payload.transport_preference,
+            budget_per_person=payload.budget_per_person,
+            num_people=payload.num_people
+        )
+    except ValueError as e:
+        # AI services unavailable and city not supported for fallback
+        return {
+            "status": "error",
+            "message": str(e),
+            "city": payload.city,
+            "suggestion": "Please try Bengaluru or configure API keys (OPENAI_API_KEY or GEMINI_API_KEY) in backend/.env"
+        }
     
     # Add famous places to each day
     if famous_places:
