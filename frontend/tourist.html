@@ -17,13 +17,14 @@
       height: calc(100vh - 140px);
       overflow-y: auto;
       display: flex;
-      align-items: center;
-      justify-content: center;
+      /* Fixed: Removed align-items/justify-content to prevent clipping on overflow */
     }
 
     .tourist-form-container .card {
       width: 100%;
       max-width: 500px;
+      margin: auto;
+      /* Fixed: Auto margin centers the card but allows scrolling */
       background: rgba(30, 30, 45, 0.8);
       border: 1px solid rgba(245, 158, 11, 0.3);
       box-shadow: 0 0 30px rgba(245, 158, 11, 0.2);
@@ -229,6 +230,34 @@
               placeholder="Enter number of days" />
           </div>
 
+          <!-- Interests -->
+          <div class="form-group">
+            <label>🎨 Interests (Select multiple)</label>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 5px;">
+              <label
+                style="display: flex; align-items: center; cursor: pointer; background: rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 20px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                <input type="checkbox" name="interest" value="Heritage" style="margin-right: 6px;"> Heritage
+              </label>
+              <label
+                style="display: flex; align-items: center; cursor: pointer; background: rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 20px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                <input type="checkbox" name="interest" value="Food" style="margin-right: 6px;"> Food
+              </label>
+              <label
+                style="display: flex; align-items: center; cursor: pointer; background: rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 20px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                <input type="checkbox" name="interest" value="Adventure" id="interestAdventure"
+                  style="margin-right: 6px;"> Adventure
+              </label>
+              <label
+                style="display: flex; align-items: center; cursor: pointer; background: rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 20px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                <input type="checkbox" name="interest" value="Nature" style="margin-right: 6px;"> Nature
+              </label>
+              <label
+                style="display: flex; align-items: center; cursor: pointer; background: rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 20px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                <input type="checkbox" name="interest" value="Shopping" style="margin-right: 6px;"> Shopping
+              </label>
+            </div>
+          </div>
+
           <!-- Elderly Travelers -->
           <div class="form-group">
             <label style="display: flex; align-items: center; cursor: pointer;">
@@ -349,6 +378,10 @@
       const transportPreference = document.getElementById("transportPreference").value;
       const budget = document.getElementById("budget").value;
 
+      // Get selected interests
+      const selectedInterests = Array.from(document.querySelectorAll('input[name="interest"]:checked'))
+        .map(cb => cb.value);
+
       const cityName = destinationInput.value.trim();
 
       if (!cityName) {
@@ -378,6 +411,7 @@
             elderly_travelers: elderlyTravelers,
             transport_preference: transportPreference,
             budget_per_person: parseInt(budget),
+            interests: selectedInterests // Pass selected interests
           }),
         });
 
@@ -493,6 +527,39 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       console.log("Tourist page loaded");
+
+      // Mutual Exclusivity Logic
+      const adventureCheckbox = document.getElementById("interestAdventure");
+      const elderlyCheckbox = document.getElementById("elderlyTravelers");
+      const elderlyLabel = elderlyCheckbox.parentElement;
+
+      if (adventureCheckbox && elderlyCheckbox) {
+        adventureCheckbox.addEventListener("change", (e) => {
+          if (e.target.checked) {
+            elderlyCheckbox.checked = false;
+            elderlyCheckbox.disabled = true;
+            elderlyLabel.style.opacity = "0.5";
+            elderlyLabel.style.cursor = "not-allowed";
+          } else {
+            elderlyCheckbox.disabled = false;
+            elderlyLabel.style.opacity = "1";
+            elderlyLabel.style.cursor = "pointer";
+          }
+        });
+
+        elderlyCheckbox.addEventListener("change", (e) => {
+          if (e.target.checked) {
+            adventureCheckbox.checked = false;
+            adventureCheckbox.disabled = true;
+            adventureCheckbox.parentElement.style.opacity = "0.5";
+            adventureCheckbox.parentElement.style.cursor = "not-allowed";
+          } else {
+            adventureCheckbox.disabled = false;
+            adventureCheckbox.parentElement.style.opacity = "1";
+            adventureCheckbox.parentElement.style.cursor = "pointer";
+          }
+        });
+      }
 
       // Setup generate button
       document

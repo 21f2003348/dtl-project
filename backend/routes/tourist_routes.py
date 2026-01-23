@@ -255,8 +255,13 @@ async def get_tourist_itinerary(
     # NOTE: We no longer return error for unknown cities to support Free Text Input
     # if not famous_places: ... (removed)
     
-    # Auto-set interests based on city
-    auto_interests = _detect_city_interests(payload.city)
+    # Determine interests: User selected >> Auto-detected
+    if payload.interests and len(payload.interests) > 0:
+        final_interests = payload.interests
+        print(f"[TOURIST] Using user-selected interests: {final_interests}")
+    else:
+        final_interests = _detect_city_interests(payload.city)
+        print(f"[TOURIST] Using auto-detected interests: {final_interests}")
     
     # Determine budget level from numeric budget
     if payload.budget_per_person:
@@ -274,7 +279,7 @@ async def get_tourist_itinerary(
         itinerary = tourist_ai.generate_itinerary(
             city=payload.city,
             days=payload.days or 1,
-            interests=auto_interests,
+            interests=final_interests,
             budget=budget_level,
             travel_style="elderly" if payload.elderly_travelers else "explorer",
             transport_preference=payload.transport_preference,
