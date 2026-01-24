@@ -359,7 +359,7 @@ async def get_tourist_itinerary(
                         days=payload.days or 1,
                         num_people=payload.num_people,
                         itinerary_data=json.dumps(itinerary),
-                        interests=",".join(auto_interests) if auto_interests else None,
+                        interests=",".join(final_interests) if final_interests else None,
                         budget="moderate"
                     )
                     

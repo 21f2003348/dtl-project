@@ -204,13 +204,12 @@ function setupEventListeners() {
   if (historyBtn) {
     historyBtn.addEventListener("click", () => {
       window.location.href = "history.html";
+    });
+  }
 
-      if (itinerariesBtn) {
-        itinerariesBtn.addEventListener("click", () => {
-          window.location.href = "itineraries.html";
-        });
-      }
-      const itinerariesBtn = document.getElementById("itinerariesBtn");
+  if (itinerariesBtn) {
+    itinerariesBtn.addEventListener("click", () => {
+      window.location.href = "itineraries.html";
     });
   }
 
@@ -392,8 +391,8 @@ async function handleLogin() {
       const historyBtn = document.getElementById("historyBtn");
       if (loginBtn) loginBtn.textContent = `🚪 Logout (${data.user.username})`;
       if (historyBtn) historyBtn.style.display = "block";
-      if (itinerariesBtn) itinerariesBtn.style.display = "block";
       const itinerariesBtn = document.getElementById("itinerariesBtn");
+      if (itinerariesBtn) itinerariesBtn.style.display = "block";
 
       closeModal("loginModal");
       if (usernameInput) usernameInput.value = "";
@@ -417,8 +416,8 @@ function logout() {
   const historyBtn = document.getElementById("historyBtn");
   if (loginBtn) loginBtn.textContent = "Login";
   if (historyBtn) historyBtn.style.display = "none";
-  if (itinerariesBtn) itinerariesBtn.style.display = "none";
   const itinerariesBtn = document.getElementById("itinerariesBtn");
+  if (itinerariesBtn) itinerariesBtn.style.display = "none";
 
   showToast("Logged out successfully", "success");
 }
@@ -450,9 +449,9 @@ function checkAuthStatus() {
     const loginBtn = document.getElementById("loginBtn");
     const historyBtn = document.getElementById("historyBtn");
     if (loginBtn) loginBtn.textContent = `🚪 Logout (${user})`;
-    if (itinerariesBtn) itinerariesBtn.style.display = "block";
     const itinerariesBtn = document.getElementById("itinerariesBtn");
-    if (itinerariesBtn) itinerariesBtn.style.display = "none";
+    if (itinerariesBtn) itinerariesBtn.style.display = "block";
+    if (historyBtn) historyBtn.style.display = "block";
     if (historyBtn) historyBtn.style.display = "block";
   } else {
     state.isLoggedIn = false;
