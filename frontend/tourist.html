@@ -12,26 +12,38 @@
   <link rel="stylesheet" href="styles.css" />
   <style>
     /* Tourist form styling */
+    :root {
+      --tourist-text: #fbbf24;
+      --tourist-border: rgba(245, 158, 11, 0.3);
+      --tourist-shadow: rgba(245, 158, 11, 0.2);
+    }
+
+    [data-theme="light"] {
+      --tourist-text: #d97706;
+      /* Darker amber for visibility on light bg */
+      --tourist-border: rgba(245, 158, 11, 0.5);
+      --tourist-shadow: rgba(245, 158, 11, 0.15);
+    }
+
     .tourist-form-container {
       padding: 20px;
       height: calc(100vh - 140px);
       overflow-y: auto;
       display: flex;
-      /* Fixed: Removed align-items/justify-content to prevent clipping on overflow */
     }
 
     .tourist-form-container .card {
       width: 100%;
       max-width: 500px;
       margin: auto;
-      /* Fixed: Auto margin centers the card but allows scrolling */
-      background: rgba(30, 30, 45, 0.8);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      box-shadow: 0 0 30px rgba(245, 158, 11, 0.2);
+      background: var(--color-bg-card);
+      border: 1px solid var(--tourist-border);
+      box-shadow: 0 0 30px var(--tourist-shadow);
+      backdrop-filter: blur(20px);
     }
 
     .tourist-form-container h2 {
-      color: #fbbf24;
+      color: var(--tourist-text);
       font-size: 1.8em;
       margin-bottom: 20px;
       text-align: center;
@@ -44,7 +56,7 @@
     .form-group label {
       display: block;
       margin-bottom: 8px;
-      color: #fbbf24;
+      color: var(--tourist-text);
       font-weight: 600;
       font-size: 1em;
     }
@@ -52,24 +64,45 @@
     .form-input {
       width: 100%;
       padding: 12px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(245, 158, 11, 0.4);
+      background: var(--color-bg-glass);
+      border: 1px solid var(--color-border);
       border-radius: 8px;
-      color: #ffffff;
+      color: var(--color-text-primary);
       font-size: 1em;
       transition: all 0.3s ease;
     }
 
     .form-input:focus {
       outline: none;
-      background: rgba(255, 255, 255, 0.12);
-      border-color: #fbbf24;
-      box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+      background: var(--color-bg-secondary);
+      border-color: var(--color-tourist);
+      box-shadow: 0 0 10px var(--tourist-shadow);
     }
 
     .form-input option {
-      background: #1a1a24;
-      color: #ffffff;
+      background: var(--color-bg-secondary);
+      color: var(--color-text-primary);
+    }
+
+    .interest-tag {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      background: var(--color-bg-glass);
+      padding: 8px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-primary);
+      transition: all 0.2s ease;
+    }
+
+    .interest-tag:hover {
+      background: var(--color-bg-secondary);
+      border-color: var(--color-tourist);
+    }
+
+    .interest-tag input {
+      margin-right: 6px;
     }
 
     #destinationInfo {
@@ -78,12 +111,16 @@
       border-radius: 8px !important;
     }
 
+    [data-theme="light"] #destinationInfo {
+      background: rgba(245, 158, 11, 0.1) !important;
+    }
+
     #destinationInfo p {
-      color: #fbbf24;
+      color: var(--tourist-text);
     }
 
     #destinationBestFor {
-      color: #a1a1aa !important;
+      color: var(--color-text-muted) !important;
     }
 
     .btn--primary {
@@ -112,66 +149,62 @@
     }
 
     .text-muted {
-      color: #a1a1aa;
+      color: var(--color-text-muted);
     }
 
     .text-center {
       text-align: center;
     }
 
-    /* Itinerary styling - FIXED DARK THEME */
+    /* Itinerary styling */
     .itinerary-container {
       background: linear-gradient(135deg,
           rgba(245, 158, 11, 0.2) 0%,
-          rgba(191, 144, 0, 0.15) 100%) !important;
-      border: 1px solid rgba(245, 158, 11, 0.3) !important;
-      padding: 20px !important;
-      border-radius: 12px !important;
-      margin-bottom: 20px !important;
+          rgba(191, 144, 0, 0.15) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
     }
 
     .itinerary-container h3 {
-      color: #fbbf24 !important;
-      margin-top: 0 !important;
-      font-size: 1.3em !important;
+      color: var(--tourist-text);
+      margin-top: 0;
+      font-size: 1.3em;
     }
 
     .itinerary-container p {
-      color: #e0e7ff !important;
-      margin: 8px 0 !important;
+      color: var(--color-text-primary);
+      margin: 8px 0;
     }
 
     .itinerary-container strong {
-      color: #fbbf24;
+      color: var(--tourist-text);
     }
 
     /* Day plan cards */
-    [style*="border-left: 4px solid #f59e0b"] {
-      background: rgba(245, 158, 11, 0.1) !important;
-      border-left: 4px solid #f59e0b !important;
-      border-top: 1px solid rgba(245, 158, 11, 0.2) !important;
-      border-right: 1px solid rgba(245, 158, 11, 0.2) !important;
-      border-bottom: 1px solid rgba(245, 158, 11, 0.2) !important;
+    .day-plan-card {
+      background: rgba(245, 158, 11, 0.05);
+      border-left: 4px solid var(--color-tourist);
+      border-top: 1px solid rgba(245, 158, 11, 0.2);
+      border-right: 1px solid rgba(245, 158, 11, 0.2);
+      border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
     }
 
-    [style*="border-left: 4px solid #f59e0b"] h4 {
-      color: #fbbf24 !important;
+    .day-plan-card h4 {
+      color: var(--tourist-text);
+      margin: 0;
     }
 
-    [style*="border-left: 4px solid #f59e0b"] strong {
-      color: #fbbf24;
+    .day-plan-card strong {
+      color: var(--tourist-text);
     }
 
-    [style*="border-left: 4px solid #f59e0b"] em {
-      color: #a1a1aa;
-    }
-
-    [style*="color: #27ae60"] {
-      color: #10b981 !important;
-    }
-
-    [style*="color: #27ae60"] strong {
-      color: #34d399 !important;
+    .day-plan-card em {
+      color: var(--color-text-muted);
     }
   </style>
 </head>
@@ -234,30 +267,21 @@
           <div class="form-group">
             <label data-i18n="interestsSelect">🎨 Interests (Select multiple)</label>
             <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 5px;">
-              <label
-                style="display: flex; align-items: center; cursor: pointer; background: rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 20px; border: 1px solid rgba(245, 158, 11, 0.2);">
-                <input type="checkbox" name="interest" value="Heritage" style="margin-right: 6px;"> <span
-                  data-i18n="heritage">Heritage</span>
+              <label class="interest-tag">
+                <input type="checkbox" name="interest" value="Heritage"> <span data-i18n="heritage">Heritage</span>
               </label>
-              <label
-                style="display: flex; align-items: center; cursor: pointer; background: rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 20px; border: 1px solid rgba(245, 158, 11, 0.2);">
-                <input type="checkbox" name="interest" value="Food" style="margin-right: 6px;"> <span
-                  data-i18n="food">Food</span>
+              <label class="interest-tag">
+                <input type="checkbox" name="interest" value="Food"> <span data-i18n="food">Food</span>
               </label>
-              <label
-                style="display: flex; align-items: center; cursor: pointer; background: rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 20px; border: 1px solid rgba(245, 158, 11, 0.2);">
-                <input type="checkbox" name="interest" value="Adventure" id="interestAdventure"
-                  style="margin-right: 6px;"> <span data-i18n="adventure">Adventure</span>
+              <label class="interest-tag">
+                <input type="checkbox" name="interest" value="Adventure" id="interestAdventure">
+                <span data-i18n="adventure">Adventure</span>
               </label>
-              <label
-                style="display: flex; align-items: center; cursor: pointer; background: rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 20px; border: 1px solid rgba(245, 158, 11, 0.2);">
-                <input type="checkbox" name="interest" value="Nature" style="margin-right: 6px;"> <span
-                  data-i18n="nature">Nature</span>
+              <label class="interest-tag">
+                <input type="checkbox" name="interest" value="Nature"> <span data-i18n="nature">Nature</span>
               </label>
-              <label
-                style="display: flex; align-items: center; cursor: pointer; background: rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 20px; border: 1px solid rgba(245, 158, 11, 0.2);">
-                <input type="checkbox" name="interest" value="Shopping" style="margin-right: 6px;"> <span
-                  data-i18n="shopping">Shopping</span>
+              <label class="interest-tag">
+                <input type="checkbox" name="interest" value="Shopping"> <span data-i18n="shopping">Shopping</span>
               </label>
             </div>
           </div>
@@ -500,23 +524,23 @@
             data.detailed_instructions.forEach((day, index) => {
               const dayId = `day-${index}`;
               itineraryHTML += `
-                                <div style="margin-bottom: 15px; border-left: 4px solid #f59e0b; padding: 15px; background: rgba(245, 158, 11, 0.1); border-radius: 8px;">
+                                <div class="day-plan-card">
                                     <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="document.getElementById('${dayId}').style.display = document.getElementById('${dayId}').style.display === 'none' ? 'block' : 'none'; this.querySelector('span').textContent = document.getElementById('${dayId}').style.display === 'none' ? '▼' : '▲';">
-                                        <h4 style="margin: 0; color: #fbbf24;">📅 Day ${day.day}: ${day.theme}</h4>
-                                        <span style="color: #fbbf24; font-size: 1.2em; font-weight: bold;">▲</span>
+                                        <h4>📅 Day ${day.day}: ${day.theme}</h4>
+                                        <span style="color: var(--tourist-text); font-size: 1.2em; font-weight: bold;">▲</span>
                                     </div>
                                     <div id="${dayId}" style="margin-top: 10px;">
-                                         <div style="margin: 15px 0; padding: 12px; background: rgba(245, 158, 11, 0.2); border-left: 3px solid #fbbf24; border-radius: 4px;">
-                                            <strong style="color: #fbbf24;">🌅 Morning:</strong>
-                                            <div style="color: #e0e7ff; margin-top: 8px; line-height: 1.6;">${convertMarkdownToHtml(day.morning)}</div>
+                                         <div style="margin: 15px 0; padding: 12px; background: rgba(245, 158, 11, 0.2); border-left: 3px solid var(--color-tourist); border-radius: 4px;">
+                                            <strong>🌅 Morning:</strong>
+                                            <div style="color: var(--color-text-primary); margin-top: 8px; line-height: 1.6;">${convertMarkdownToHtml(day.morning)}</div>
                                         </div>
-                                        <div style="margin: 15px 0; padding: 12px; background: rgba(245, 158, 11, 0.2); border-left: 3px solid #fbbf24; border-radius: 4px;">
-                                            <strong style="color: #fbbf24;">☀️ Afternoon:</strong>
-                                            <div style="color: #e0e7ff; margin-top: 8px; line-height: 1.6;">${convertMarkdownToHtml(day.afternoon)}</div>
+                                        <div style="margin: 15px 0; padding: 12px; background: rgba(245, 158, 11, 0.2); border-left: 3px solid var(--color-tourist); border-radius: 4px;">
+                                            <strong>☀️ Afternoon:</strong>
+                                            <div style="color: var(--color-text-primary); margin-top: 8px; line-height: 1.6;">${convertMarkdownToHtml(day.afternoon)}</div>
                                         </div>
-                                        <div style="margin: 15px 0; padding: 12px; background: rgba(245, 158, 11, 0.2); border-left: 3px solid #fbbf24; border-radius: 4px;">
-                                            <strong style="color: #fbbf24;">🌆 Evening:</strong>
-                                            <div style="color: #e0e7ff; margin-top: 8px; line-height: 1.6;">${convertMarkdownToHtml(day.evening)}</div>
+                                        <div style="margin: 15px 0; padding: 12px; background: rgba(245, 158, 11, 0.2); border-left: 3px solid var(--color-tourist); border-radius: 4px;">
+                                            <strong>🌆 Evening:</strong>
+                                            <div style="color: var(--color-text-primary); margin-top: 8px; line-height: 1.6;">${convertMarkdownToHtml(day.evening)}</div>
                                         </div>
                                         <div style="margin: 15px 0; padding: 12px; background: rgba(16, 185, 129, 0.2); border-left: 3px solid #34d399; border-radius: 4px;">
                                             <strong style="color: #34d399;">💰 Budget:</strong> ${day.estimated_budget}
