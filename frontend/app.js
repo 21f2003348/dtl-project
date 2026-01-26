@@ -12,9 +12,11 @@ const CONFIG = {
     LANGUAGE: "travel_assistant_language",
     USER_TYPE: "travel_assistant_user_type",
     USER_SESSION: "travel_assistant_session",
+    THEME: "travel_assistant_theme",
   },
   DEFAULT_LANGUAGE: "en",
   SUPPORTED_LANGUAGES: ["en", "hi", "kn"],
+  DEFAULT_THEME: "dark",
 };
 
 // ===========================
@@ -25,6 +27,7 @@ const state = {
   userType: null,
   translations: {},
   isLoggedIn: false,
+  theme: CONFIG.DEFAULT_THEME,
 };
 
 // ===========================
@@ -110,6 +113,12 @@ function loadSavedPreferences() {
     state.userType = savedUserType;
   }
 
+  // Load theme
+  const savedTheme = localStorage.getItem(CONFIG.STORAGE_KEYS.THEME);
+  if (savedTheme && ["dark", "light"].includes(savedTheme)) {
+    state.theme = savedTheme;
+  }
+
   // Load session
   const savedSession = localStorage.getItem(CONFIG.STORAGE_KEYS.USER_SESSION);
   if (savedSession) {
@@ -120,6 +129,28 @@ function loadSavedPreferences() {
       state.isLoggedIn = false;
     }
   }
+}
+
+// ===========================
+// Theme Management
+// ===========================
+function applyTheme(theme) {
+  state.theme = theme;
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, theme);
+
+  // Update theme toggle button icon
+  const themeBtn = document.getElementById("themeBtn");
+  if (themeBtn) {
+    themeBtn.innerHTML = theme === "dark" ? "🌙" : "☀️";
+    themeBtn.title = theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode";
+  }
+}
+
+function toggleTheme() {
+  const newTheme = state.theme === "dark" ? "light" : "dark";
+  applyTheme(newTheme);
+  showToast(`Switched to ${newTheme} mode`, "success");
 }
 
 // ===========================
@@ -181,6 +212,12 @@ function setupEventListeners() {
   const languageBtn = document.getElementById("languageBtn");
   if (languageBtn) {
     languageBtn.addEventListener("click", () => openModal("languageModal"));
+  }
+
+  // Theme toggle button
+  const themeBtn = document.getElementById("themeBtn");
+  if (themeBtn) {
+    themeBtn.addEventListener("click", toggleTheme);
   }
 
   // Login button
@@ -311,6 +348,9 @@ async function init() {
   // Load saved preferences first
   loadSavedPreferences();
 
+  // Apply saved theme
+  applyTheme(state.theme);
+
   // Load translations
   await loadTranslations();
 
@@ -349,6 +389,8 @@ window.TravelAssistant = {
   handleRegister,
   logout,
   checkAuthStatus,
+  applyTheme,
+  toggleTheme,
   init,
 };
 

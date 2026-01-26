@@ -1,231 +1,167 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="AI-powered travel assistant for students, elderly, and tourists in Bengaluru"
-    />
-    <title>Travel Assistant</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <!-- Header -->
-    <header class="header">
-      <div class="header__logo">
-        <span class="header__logo-icon">🗺️</span>
-        <span data-i18n="appName">Travel Assistant</span>
-      </div>
-      <nav class="header__nav">
-        <button class="btn btn--ghost" id="languageBtn" title="Change Language">
-          🌐 <span id="currentLangLabel">EN</span>
-        </button>
-        <button
-          class="btn btn--secondary"
-          id="historyBtn"
-          title="View Search History"
-          style="display: none"
-        >
-          📋 History
-        </button>
-        <button
-          class="btn btn--secondary"
-          id="itinerariesBtn"
-          title="View Saved Itineraries"
-          style="display: none"
-        >
-          🗺️ Itineraries
-        </button>
-        <button class="btn btn--secondary" id="loginBtn" data-i18n="login">
-          Login
-        </button>
-      </nav>
-    </header>
 
-    <!-- Main Content -->
-    <main class="main">
-      <section class="home">
-        <h1 class="home__title" data-i18n="welcome">Welcome</h1>
-        <p class="home__subtitle" data-i18n="selectUserType">
-          Select Your Profile
-        </p>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="AI-powered travel assistant for students, elderly, and tourists in Bengaluru" />
+  <title>Travel Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
 
-        <div class="home__cards">
-          <!-- Student Card -->
-          <div
-            class="card card--interactive user-card user-card--student"
-            data-user-type="student"
-            id="studentCard"
-          >
-            <div class="user-card__icon">🎓</div>
-            <h3 class="user-card__title" data-i18n="student">Student</h3>
-            <p class="user-card__description" data-i18n="studentDesc">
-              Budget-friendly routes, college commutes
-            </p>
-          </div>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header__logo">
+      <span class="header__logo-icon">🗺️</span>
+      <span data-i18n="appName">Travel Assistant</span>
+    </div>
+    <nav class="header__nav">
+      <button class="btn btn--ghost" id="themeBtn" title="Toggle Theme">
+        🌙
+      </button>
+      <button class="btn btn--ghost" id="languageBtn" title="Change Language">
+        🌐 <span id="currentLangLabel">EN</span>
+      </button>
+      <button class="btn btn--secondary" id="historyBtn" title="View Search History" style="display: none">
+        📋 History
+      </button>
+      <button class="btn btn--secondary" id="itinerariesBtn" title="View Saved Itineraries" style="display: none">
+        🗺️ Itineraries
+      </button>
+      <button class="btn btn--secondary" id="loginBtn" data-i18n="login">
+        Login
+      </button>
+    </nav>
+  </header>
 
-          <!-- Elderly Card -->
-          <div
-            class="card card--interactive user-card user-card--elderly"
-            data-user-type="elderly"
-            id="elderlyCard"
-          >
-            <div class="user-card__icon">👴</div>
-            <h3 class="user-card__title" data-i18n="elderly">Elderly</h3>
-            <p class="user-card__description" data-i18n="elderlyDesc">
-              Safe routes, simple guidance
-            </p>
-          </div>
+  <!-- Main Content -->
+  <main class="main">
+    <section class="home">
+      <h1 class="home__title" data-i18n="welcome">Welcome</h1>
+      <p class="home__subtitle" data-i18n="selectUserType">
+        Select Your Profile
+      </p>
 
-          <!-- Tourist Card -->
-          <div
-            class="card card--interactive user-card user-card--tourist"
-            data-user-type="tourist"
-            id="touristCard"
-          >
-            <div class="user-card__icon">🧳</div>
-            <h3 class="user-card__title" data-i18n="tourist">Tourist</h3>
-            <p class="user-card__description" data-i18n="touristDesc">
-              Explore the city, find attractions
-            </p>
-          </div>
+      <div class="home__cards">
+        <!-- Student Card -->
+        <div class="card card--interactive user-card user-card--student" data-user-type="student" id="studentCard">
+          <div class="user-card__icon">🎓</div>
+          <h3 class="user-card__title" data-i18n="student">Student</h3>
+          <p class="user-card__description" data-i18n="studentDesc">
+            Budget-friendly routes, college commutes
+          </p>
         </div>
-      </section>
-    </main>
 
-    <!-- Language Selection Modal -->
-    <div class="modal-overlay" id="languageModal">
-      <div class="modal">
-        <h2 class="modal__title" data-i18n="selectLanguage">Select Language</h2>
-        <div class="language-options">
-          <div class="language-option" data-lang="en">
-            <span class="language-option__flag">🇬🇧</span>
-            <span class="language-option__name" data-i18n="english"
-              >English</span
-            >
-            <span class="language-option__native">English</span>
-          </div>
-          <div class="language-option" data-lang="hi">
-            <span class="language-option__flag">🇮🇳</span>
-            <span class="language-option__name" data-i18n="hindi">Hindi</span>
-            <span class="language-option__native">हिंदी</span>
-          </div>
-          <div class="language-option" data-lang="kn">
-            <span class="language-option__flag">🇮🇳</span>
-            <span class="language-option__name" data-i18n="kannada"
-              >Kannada</span
-            >
-            <span class="language-option__native">ಕನ್ನಡ</span>
-          </div>
+        <!-- Elderly Card -->
+        <div class="card card--interactive user-card user-card--elderly" data-user-type="elderly" id="elderlyCard">
+          <div class="user-card__icon">👴</div>
+          <h3 class="user-card__title" data-i18n="elderly">Elderly</h3>
+          <p class="user-card__description" data-i18n="elderlyDesc">
+            Safe routes, simple guidance
+          </p>
+        </div>
+
+        <!-- Tourist Card -->
+        <div class="card card--interactive user-card user-card--tourist" data-user-type="tourist" id="touristCard">
+          <div class="user-card__icon">🧳</div>
+          <h3 class="user-card__title" data-i18n="tourist">Tourist</h3>
+          <p class="user-card__description" data-i18n="touristDesc">
+            Explore the city, find attractions
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Language Selection Modal -->
+  <div class="modal-overlay" id="languageModal">
+    <div class="modal">
+      <h2 class="modal__title" data-i18n="selectLanguage">Select Language</h2>
+      <div class="language-options">
+        <div class="language-option" data-lang="en">
+          <span class="language-option__flag">🇬🇧</span>
+          <span class="language-option__name" data-i18n="english">English</span>
+          <span class="language-option__native">English</span>
+        </div>
+        <div class="language-option" data-lang="hi">
+          <span class="language-option__flag">🇮🇳</span>
+          <span class="language-option__name" data-i18n="hindi">Hindi</span>
+          <span class="language-option__native">हिंदी</span>
+        </div>
+        <div class="language-option" data-lang="kn">
+          <span class="language-option__flag">🇮🇳</span>
+          <span class="language-option__name" data-i18n="kannada">Kannada</span>
+          <span class="language-option__native">ಕನ್ನಡ</span>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Login Modal -->
-    <div class="modal-overlay" id="loginModal">
-      <div class="modal">
-        <h2 class="modal__title" data-i18n="login">Login</h2>
-        <form id="loginForm">
-          <div class="form-group">
-            <label for="username">Username</label>
-            <input
-              type="text"
-              id="username"
-              class="form-input"
-              placeholder="Enter your username"
-              autocomplete="username"
-            />
-          </div>
-          <div class="form-group mt-1">
-            <label for="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              class="form-input"
-              placeholder="Enter your password"
-              autocomplete="current-password"
-            />
-          </div>
-          <button
-            type="submit"
-            class="btn btn--primary btn--lg mt-2"
-            style="width: 100%"
-          >
-            <span data-i18n="login">Login</span>
-          </button>
-          <p class="text-center text-muted mt-1">
-            <small
-              >Need an account?
-              <button type="button" id="showRegisterBtn" class="link-btn">
-                Register
-              </button></small
-            >
-          </p>
-        </form>
-
-        <form id="registerForm" style="display: none">
-          <div class="form-group">
-            <label for="regUsername">Username</label>
-            <input
-              type="text"
-              id="regUsername"
-              class="form-input"
-              placeholder="Choose a username"
-              autocomplete="username"
-            />
-          </div>
-          <div class="form-group mt-1">
-            <label for="regEmail">Email</label>
-            <input
-              type="email"
-              id="regEmail"
-              class="form-input"
-              placeholder="Enter your email"
-              autocomplete="email"
-            />
-          </div>
-          <div class="form-group mt-1">
-            <label for="regPassword">Password</label>
-            <input
-              type="password"
-              id="regPassword"
-              class="form-input"
-              placeholder="Create a password"
-              autocomplete="new-password"
-            />
-          </div>
-          <button
-            type="submit"
-            class="btn btn--primary btn--lg mt-2"
-            style="width: 100%"
-          >
-            <span>Register</span>
-          </button>
-          <p class="text-center text-muted mt-1">
-            <small
-              >Already have an account?
-              <button type="button" id="showLoginBtn" class="link-btn">
-                Login
-              </button></small
-            >
-          </p>
-        </form>
+  <!-- Login Modal -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal">
+      <h2 class="modal__title" data-i18n="login">Login</h2>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" class="form-input" placeholder="Enter your username"
+            autocomplete="username" />
+        </div>
+        <div class="form-group mt-1">
+          <label for="password">Password</label>
+          <input type="password" id="password" class="form-input" placeholder="Enter your password"
+            autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn btn--primary btn--lg mt-2" style="width: 100%">
+          <span data-i18n="login">Login</span>
+        </button>
         <p class="text-center text-muted mt-1">
-          <small>Login is optional. You can continue without an account.</small>
+          <small>Need an account?
+            <button type="button" id="showRegisterBtn" class="link-btn">
+              Register
+            </button></small>
         </p>
-      </div>
+      </form>
+
+      <form id="registerForm" style="display: none">
+        <div class="form-group">
+          <label for="regUsername">Username</label>
+          <input type="text" id="regUsername" class="form-input" placeholder="Choose a username"
+            autocomplete="username" />
+        </div>
+        <div class="form-group mt-1">
+          <label for="regEmail">Email</label>
+          <input type="email" id="regEmail" class="form-input" placeholder="Enter your email" autocomplete="email" />
+        </div>
+        <div class="form-group mt-1">
+          <label for="regPassword">Password</label>
+          <input type="password" id="regPassword" class="form-input" placeholder="Create a password"
+            autocomplete="new-password" />
+        </div>
+        <button type="submit" class="btn btn--primary btn--lg mt-2" style="width: 100%">
+          <span>Register</span>
+        </button>
+        <p class="text-center text-muted mt-1">
+          <small>Already have an account?
+            <button type="button" id="showLoginBtn" class="link-btn">
+              Login
+            </button></small>
+        </p>
+      </form>
+      <p class="text-center text-muted mt-1">
+        <small>Login is optional. You can continue without an account.</small>
+      </p>
     </div>
+  </div>
 
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
 
-    <script src="app.js"></script>
-  </body>
+  <script src="app.js"></script>
+</body>
+
 </html>
